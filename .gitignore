@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+vendor/
+.pnp
+.pnp.js
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.backup
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+composer.lock
+
+# Laravel
+apps/api/storage/*.key
+apps/api/vendor/
+apps/api/.env
+apps/api/public/hot
+apps/api/public/storage
+apps/api/storage/*.key
+apps/api/bootstrap/cache/*.php
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+apps/web/.env*.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.pid
+*.seed
+*.pid.lock
+cache/
+
+# Brand assets source (keep only optimized/public versions)
+design/**/*.psd
+design/**/*.ai
+design/**/*.sketch
