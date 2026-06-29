@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api\V1\Organization;
 
 use App\Enums\ApprovalStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Organization\OrganizationStoreRequest;
+use App\Http\Requests\Organization\OrganizationUpdateRequest;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
 use App\Services\AuditLogService;
@@ -21,17 +23,9 @@ class OrganizationController extends Controller
         return $this->successResponse($org);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(OrganizationStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:5000',
-            'website' => 'nullable|url|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'logo' => 'nullable|image|max:1024',
-        ]);
+        $validated = $request->validated();
 
         $org = Organization::create([
             ...$validated,
@@ -52,7 +46,7 @@ class OrganizationController extends Controller
         return $this->successResponse($org->load(['owner']), 'Organisasi berhasil dibuat', 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(OrganizationUpdateRequest $request, int $id): JsonResponse
     {
         $org = Organization::findOrFail($id);
 
@@ -60,14 +54,7 @@ class OrganizationController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string|max:5000',
-            'website' => 'nullable|url|max:255',
-            'email' => 'sometimes|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-        ]);
+        $validated = $request->validated();
 
         if (isset($validated['name'])) {
             $validated['slug'] = Str::slug($validated['name']);
@@ -137,7 +124,7 @@ class OrganizationController extends Controller
         if ($org->owner_id !== $request->user()->id) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
-        $org->update(['status' => ApprovalStatus::APPROVED]);
+        $org->update(['status' => ApprovalStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $org, null, $request);
         return $this->successResponse($org, 'Organisasi diarsipkan');
     }

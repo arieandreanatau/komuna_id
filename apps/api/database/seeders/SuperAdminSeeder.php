@@ -4,32 +4,39 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Enums\UserStatus;
+use App\Models\Profile;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SuperAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::create([
+        if (User::where('email', 'admin@komuna.id')->exists()) {
+            return;
+        }
+
+        $user = User::create([
+            'uuid' => (string) Str::uuid(),
             'name' => 'Super Admin',
             'email' => 'admin@komuna.id',
             'password' => Hash::make('password'),
-            'status' => UserStatus::ACTIVE,
+            'status' => 'active',
             'email_verified_at' => now(),
         ]);
 
-        $admin->profile()->create([
+        Profile::create([
+            'user_id' => $user->id,
             'bio' => 'Super Administrator KomunaID',
         ]);
 
-        $superAdminRole = Role::where('slug', 'super-admin')->first();
-        if ($superAdminRole) {
-            $admin->roles()->create([
-                'role_id' => $superAdminRole->id,
+        $role = Role::where('slug', 'super-admin')->first();
+        if ($role) {
+            $user->roles()->create([
+                'role_id' => $role->id,
                 'is_active' => true,
             ]);
         }

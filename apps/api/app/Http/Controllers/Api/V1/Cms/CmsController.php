@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api\V1\Cms;
 
 use App\Enums\ArticleStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Cms\ArticleStoreRequest;
+use App\Http\Requests\Cms\ArticleUpdateRequest;
 use App\Models\Article;
 use App\Models\ArticleCategory;
 use App\Models\Faq;
@@ -57,15 +59,9 @@ class CmsController extends Controller
         return $this->successResponse($article);
     }
 
-    public function storeArticle(Request $request): JsonResponse
+    public function storeArticle(ArticleStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string|max:1000',
-            'category_id' => 'nullable|exists:article_categories,id',
-            'cover_image' => 'nullable|image|max:2048',
-        ]);
+        $validated = $request->validated();
 
         $article = Article::create([
             ...$validated,
@@ -79,20 +75,15 @@ class CmsController extends Controller
         return $this->successResponse($article, 'Artikel berhasil dibuat', 201);
     }
 
-    public function updateArticle(Request $request, int $id): JsonResponse
+    public function updateArticle(ArticleUpdateRequest $request, int $id): JsonResponse
     {
         $article = Article::findOrFail($id);
 
-        if ($article->author_id !== $request->user()->id) {
+        if ($article->author_id !== $request->user()->id && !$request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'content' => 'sometimes|string',
-            'excerpt' => 'nullable|string|max:1000',
-            'category_id' => 'nullable|exists:article_categories,id',
-        ]);
+        $validated = $request->validated();
 
         if (isset($validated['title'])) {
             $validated['slug'] = Str::slug($validated['title']);
@@ -117,6 +108,11 @@ class CmsController extends Controller
     public function publishArticle(Request $request, int $id): JsonResponse
     {
         $article = Article::findOrFail($id);
+
+        if ($article->author_id !== $request->user()->id && !$request->user()->isAdmin()) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
+
         $article->update([
             'status' => ArticleStatus::PUBLISHED,
             'published_at' => now(),
@@ -128,6 +124,11 @@ class CmsController extends Controller
     public function unpublishArticle(Request $request, int $id): JsonResponse
     {
         $article = Article::findOrFail($id);
+
+        if ($article->author_id !== $request->user()->id && !$request->user()->isAdmin()) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
+
         $article->update(['status' => ArticleStatus::UNPUBLISHED]);
         AuditLogService::approvalAction('unpublished', $article, null, $request);
         return $this->successResponse($article, 'Artikel tidak dipublikasikan');
@@ -136,6 +137,11 @@ class CmsController extends Controller
     public function archiveArticle(Request $request, int $id): JsonResponse
     {
         $article = Article::findOrFail($id);
+
+        if ($article->author_id !== $request->user()->id && !$request->user()->isAdmin()) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
+
         $article->update(['status' => ArticleStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $article, null, $request);
         return $this->successResponse($article, 'Artikel diarsipkan');

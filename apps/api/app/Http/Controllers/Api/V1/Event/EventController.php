@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api\V1\Event;
 
 use App\Enums\EventStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Event\EventStoreRequest;
+use App\Http\Requests\Event\EventUpdateRequest;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\EventTicket;
@@ -52,22 +54,9 @@ class EventController extends Controller
         return $this->successResponse($event);
     }
 
-    public function store(Request $request, int $communityId): JsonResponse
+    public function store(EventStoreRequest $request, int $communityId): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:10000',
-            'start_date' => 'required|date|after:now',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'location' => 'nullable|string|max:255',
-            'location_url' => 'nullable|url|max:255',
-            'is_online' => 'boolean',
-            'online_url' => 'nullable|url|max:255',
-            'max_participants' => 'nullable|integer|min:1',
-            'ticket_price' => 'nullable|numeric|min:0',
-            'currency' => 'nullable|string|max:3',
-            'cover_image' => 'nullable|image|max:2048',
-        ]);
+        $validated = $request->validated();
 
         $event = Event::create([
             ...$validated,
@@ -82,7 +71,7 @@ class EventController extends Controller
         return $this->successResponse($event->load(['community', 'organizer']), 'Event berhasil dibuat', 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(EventUpdateRequest $request, int $id): JsonResponse
     {
         $event = Event::findOrFail($id);
 
@@ -90,19 +79,7 @@ class EventController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'description' => 'sometimes|string|max:10000',
-            'start_date' => 'sometimes|date',
-            'end_date' => 'sometimes|date|after_or_equal:start_date',
-            'location' => 'nullable|string|max:255',
-            'location_url' => 'nullable|url|max:255',
-            'is_online' => 'boolean',
-            'online_url' => 'nullable|url|max:255',
-            'max_participants' => 'nullable|integer|min:1',
-            'ticket_price' => 'nullable|numeric|min:0',
-            'currency' => 'nullable|string|max:3',
-        ]);
+        $validated = $request->validated();
 
         if (isset($validated['title'])) {
             $validated['slug'] = Str::slug($validated['title']);

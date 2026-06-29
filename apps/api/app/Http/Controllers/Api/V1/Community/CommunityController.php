@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api\V1\Community;
 
 use App\Enums\CommunityStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Community\CommunityStoreRequest;
+use App\Http\Requests\Community\CommunityUpdateRequest;
 use App\Models\Community;
 use App\Models\CommunityCategory;
 use App\Models\CommunityJoinRequest;
@@ -51,19 +53,9 @@ class CommunityController extends Controller
         return $this->successResponse($community);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(CommunityStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:5000',
-            'category_id' => 'required|exists:community_categories,id',
-            'website' => 'nullable|url|max:255',
-            'location' => 'nullable|string|max:255',
-            'is_public' => 'boolean',
-            'join_mode' => 'in:open,approval_required,invite_only',
-            'cover_image' => 'nullable|image|max:2048',
-            'logo' => 'nullable|image|max:1024',
-        ]);
+        $validated = $request->validated();
 
         $community = Community::create([
             ...$validated,
@@ -86,7 +78,7 @@ class CommunityController extends Controller
         return $this->successResponse($community->load(['category', 'owner']), 'Komunitas berhasil dibuat', 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(CommunityUpdateRequest $request, int $id): JsonResponse
     {
         $community = Community::findOrFail($id);
 
@@ -94,15 +86,7 @@ class CommunityController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'description' => 'sometimes|string|max:5000',
-            'category_id' => 'sometimes|exists:community_categories,id',
-            'website' => 'nullable|url|max:255',
-            'location' => 'nullable|string|max:255',
-            'is_public' => 'boolean',
-            'join_mode' => 'in:open,approval_required,invite_only',
-        ]);
+        $validated = $request->validated();
 
         if (isset($validated['name'])) {
             $validated['slug'] = Str::slug($validated['name']);

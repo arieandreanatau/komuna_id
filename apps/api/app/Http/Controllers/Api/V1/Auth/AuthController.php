@@ -13,6 +13,8 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\ProfileUpdateRequest;
+use App\Http\Requests\Auth\ChangePasswordRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -121,15 +123,9 @@ class AuthController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request): JsonResponse
+    public function updateProfile(ProfileUpdateRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'bio' => 'sometimes|nullable|string|max:1000',
-            'phone' => 'sometimes|nullable|string|max:20',
-            'location' => 'sometimes|nullable|string|max:255',
-            'website' => 'sometimes|nullable|url|max:255',
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
 
@@ -146,12 +142,9 @@ class AuthController extends Controller
         return $this->successResponse(null, 'Profil berhasil diperbarui');
     }
 
-    public function changePassword(Request $request): JsonResponse
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'current_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
 

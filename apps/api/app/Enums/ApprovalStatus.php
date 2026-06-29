@@ -10,6 +10,7 @@ enum ApprovalStatus: string
     case APPROVED = 'approved';
     case REJECTED = 'rejected';
     case REVISION = 'revision';
+    case ARCHIVED = 'archived';
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum ApprovalStatus: string
             self::APPROVED => 'Approved',
             self::REJECTED => 'Rejected',
             self::REVISION => 'Revision Needed',
+            self::ARCHIVED => 'Archived',
         };
     }
 }

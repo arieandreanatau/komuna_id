@@ -9,6 +9,12 @@ use App\Http\Controllers\Api\V1\Cms\CmsController;
 use App\Http\Controllers\Api\V1\Event\EventController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\Organization\OrganizationController;
+use App\Http\Controllers\Api\V1\Role\RoleController;
+use App\Http\Controllers\Api\V1\Role\MeRoleController;
+use App\Http\Controllers\Api\V1\Role\RoleRequestController;
+use App\Http\Controllers\Api\V1\Role\InvitationController;
+use App\Http\Controllers\Api\V1\Role\ActiveRoleController;
+use App\Http\Controllers\Api\V1\UploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -39,6 +45,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/article-categories', [CmsController::class, 'articleCategories']);
     Route::get('/pages/{slug}', [CmsController::class, 'page']);
     Route::get('/faqs', [CmsController::class, 'faqs']);
+
+    // RBAC Public
+    Route::get('/roles', [RoleController::class, 'index']);
+    Route::get('/permissions', [RoleController::class, 'permissions']);
 
     // Protected Routes
     Route::middleware('auth:sanctum')->group(function () {
@@ -119,6 +129,26 @@ Route::prefix('v1')->group(function () {
         Route::post('/articles/{id}/publish', [CmsController::class, 'publishArticle']);
         Route::post('/articles/{id}/unpublish', [CmsController::class, 'unpublishArticle']);
         Route::post('/articles/{id}/archive', [CmsController::class, 'archiveArticle']);
+
+        // My Roles
+        Route::get('/me/roles', [MeRoleController::class, 'roles']);
+        Route::post('/me/role-requests', [MeRoleController::class, 'requestRole']);
+        Route::get('/me/role-requests', [MeRoleController::class, 'roleRequests']);
+        Route::post('/me/active-role', [ActiveRoleController::class, 'switch']);
+
+        // Role Requests (Admin)
+        Route::post('/role-requests/{id}/approve', [RoleRequestController::class, 'approve'])->middleware('admin');
+        Route::post('/role-requests/{id}/reject', [RoleRequestController::class, 'reject'])->middleware('admin');
+        Route::post('/role-requests/{id}/need-revision', [RoleRequestController::class, 'needRevision'])->middleware('admin');
+
+        // Invitations
+        Route::post('/invitations', [InvitationController::class, 'store']);
+        Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept']);
+        Route::post('/invitations/{token}/reject', [InvitationController::class, 'reject']);
+
+        // Upload
+        Route::post('/upload', [UploadController::class, 'store']);
+        Route::delete('/upload', [UploadController::class, 'destroy']);
 
         // Admin (Protected + Admin middleware)
         Route::prefix('admin')->middleware(['admin'])->group(function () {

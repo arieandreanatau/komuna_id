@@ -1,0 +1,537 @@
+openapi: 3.0.3
+info:
+  title: KomunaID API
+  description: |
+    Platform Ekosistem Komunitas - REST API
+    
+    ## Authentication
+    Semua endpoint yang ditandai 🔒 memerlukan Bearer Token via header:
+    ```
+    Authorization: Bearer {token}
+    ```
+    
+    ## Response Format
+    ```json
+    {
+      "success": true,
+      "message": "OK",
+      "data": {},
+      "errors": null,
+      "meta": {}
+    }
+    ```
+  version: 1.0.0
+  contact:
+    name: KomunaID Team
+    email: api@komuna.id
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local Development
+
+tags:
+  - name: Health
+    description: System health check
+  - name: Auth
+    description: Authentication & account
+  - name: Roles
+    description: Role & permission management
+  - name: Communities
+    description: Community directory & management
+  - name: Events
+    description: Event management
+  - name: Organizations
+    description: Organization management
+  - name: Brands
+    description: Brand management
+  - name: Collaborations
+    description: Collaboration workflow
+  - name: CMS
+    description: Content management
+  - name: Admin
+    description: Admin platform
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrasi user baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, password_confirmation]
+              properties:
+                name:
+                  type: string
+                  example: "Budi Santoso"
+                email:
+                  type: string
+                  format: email
+                  example: "budi@email.com"
+                password:
+                  type: string
+                  minLength: 8
+                  example: "password123"
+                password_confirmation:
+                  type: string
+                  example: "password123"
+      responses:
+        '201':
+          description: Registrasi berhasil
+        '422':
+          description: Validasi gagal
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login berhasil
+        '422':
+          description: Email atau password salah
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: 🔒 Profil user saat ini
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthenticated
+
+  /auth/profile:
+    put:
+      tags: [Auth]
+      summary: 🔒 Update profil
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                bio:
+                  type: string
+                phone:
+                  type: string
+                location:
+                  type: string
+                website:
+                  type: string
+                  format: url
+      responses:
+        '200':
+          description: Profil diperbarui
+
+  /roles:
+    get:
+      tags: [Roles]
+      summary: 🔒 Daftar semua role
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+
+  /permissions:
+    get:
+      tags: [Roles]
+      summary: 🔒 Daftar semua permission
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+
+  /me/roles:
+    get:
+      tags: [Roles]
+      summary: 🔒 Role user saat ini
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+
+  /me/role-requests:
+    get:
+      tags: [Roles]
+      summary: 🔒 Daftar permintaan role user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Roles]
+      summary: 🔒 Ajukan permintaan role
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role_id]
+              properties:
+                role_id:
+                  type: integer
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Permintaan terkirim
+
+  /communities:
+    get:
+      tags: [Communities]
+      summary: Daftar komunitas (public)
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Communities]
+      summary: 🔒 Buat komunitas baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, description, category_id]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                category_id:
+                  type: integer
+                website:
+                  type: string
+                location:
+                  type: string
+                join_mode:
+                  type: string
+                  enum: [open, approval_required, invite_only]
+      responses:
+        '201':
+          description: Komunitas dibuat
+
+  /communities/{slug}:
+    get:
+      tags: [Communities]
+      summary: Detail komunitas (public)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Tidak ditemukan
+
+  /communities/{id}/join:
+    post:
+      tags: [Communities]
+      summary: 🔒 Bergabung ke komunitas
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Berhasil bergabung
+
+  /events:
+    get:
+      tags: [Events]
+      summary: Daftar event (public)
+      responses:
+        '200':
+          description: OK
+
+  /events/{slug}:
+    get:
+      tags: [Events]
+      summary: Detail event (public)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /events/{id}/register:
+    post:
+      tags: [Events]
+      summary: 🔒 Daftar event
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Terdaftar
+
+  /events/{id}/check-in:
+    post:
+      tags: [Events]
+      summary: 🔒 Check-in event
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qr_code]
+              properties:
+                qr_code:
+                  type: string
+      responses:
+        '200':
+          description: Check-in berhasil
+
+  /organizations:
+    post:
+      tags: [Organizations]
+      summary: 🔒 Ajukan organisasi
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                description:
+                  type: string
+                website:
+                  type: string
+                phone:
+                  type: string
+                address:
+                  type: string
+      responses:
+        '201':
+          description: Organisasi dibuat
+
+  /brands:
+    post:
+      tags: [Brands]
+      summary: 🔒 Ajukan brand
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                description:
+                  type: string
+                website:
+                  type: string
+      responses:
+        '201':
+          description: Brand dibuat
+
+  /collaborations:
+    get:
+      tags: [Collaborations]
+      summary: 🔒 Daftar kolaborasi
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Collaborations]
+      summary: 🔒 Buat kolaborasi
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, description, sender_type, sender_id, receiver_type, receiver_id]
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                sender_type:
+                  type: string
+                  enum: [brand, organization]
+                sender_id:
+                  type: integer
+                receiver_type:
+                  type: string
+                  enum: [community]
+                receiver_id:
+                  type: integer
+                budget:
+                  type: number
+      responses:
+        '201':
+          description: Kolaborasi dibuat
+
+  /articles:
+    get:
+      tags: [CMS]
+      summary: Daftar artikel (public)
+      responses:
+        '200':
+          description: OK
+
+  /articles/{slug}:
+    get:
+      tags: [CMS]
+      summary: Detail artikel (public)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /faqs:
+    get:
+      tags: [CMS]
+      summary: Daftar FAQ (public)
+      responses:
+        '200':
+          description: OK
+
+  /admin/dashboard:
+    get:
+      tags: [Admin]
+      summary: 🔒 Admin dashboard stats
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Bukan admin
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: 🔒 Daftar users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+
+  /admin/audit-logs:
+    get:
+      tags: [Admin]
+      summary: 🔒 Audit logs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

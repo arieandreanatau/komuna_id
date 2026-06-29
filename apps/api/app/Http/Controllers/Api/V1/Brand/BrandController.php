@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api\V1\Brand;
 
 use App\Enums\ApprovalStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Brand\BrandStoreRequest;
+use App\Http\Requests\Brand\BrandUpdateRequest;
 use App\Models\Brand;
 use App\Models\BrandMember;
 use App\Services\AuditLogService;
@@ -21,16 +23,9 @@ class BrandController extends Controller
         return $this->successResponse($brand);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(BrandStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:5000',
-            'website' => 'nullable|url|max:255',
-            'email' => 'required|email|max:255',
-            'organization_id' => 'nullable|exists:organizations,id',
-            'logo' => 'nullable|image|max:1024',
-        ]);
+        $validated = $request->validated();
 
         $brand = Brand::create([
             ...$validated,
@@ -51,7 +46,7 @@ class BrandController extends Controller
         return $this->successResponse($brand->load(['owner']), 'Brand berhasil dibuat', 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(BrandUpdateRequest $request, int $id): JsonResponse
     {
         $brand = Brand::findOrFail($id);
 
@@ -59,12 +54,7 @@ class BrandController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string|max:5000',
-            'website' => 'nullable|url|max:255',
-            'email' => 'sometimes|email|max:255',
-        ]);
+        $validated = $request->validated();
 
         if (isset($validated['name'])) {
             $validated['slug'] = Str::slug($validated['name']);
@@ -134,7 +124,7 @@ class BrandController extends Controller
         if ($brand->owner_id !== $request->user()->id) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
-        $brand->update(['status' => ApprovalStatus::APPROVED]);
+        $brand->update(['status' => ApprovalStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $brand, null, $request);
         return $this->successResponse($brand, 'Brand diarsipkan');
     }
