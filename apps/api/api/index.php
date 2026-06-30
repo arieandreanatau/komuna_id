@@ -2,13 +2,15 @@
 
 use Illuminate\Http\Request;
 
+define('LARAVEL_START', microtime(true));
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $storagePaths = [
-    storage_path('framework/cache/data'),
-    storage_path('framework/sessions'),
-    storage_path('framework/views'),
-    storage_path('logs'),
+    __DIR__ . '/../storage/framework/cache/data',
+    __DIR__ . '/../storage/framework/sessions',
+    __DIR__ . '/../storage/framework/views',
+    __DIR__ . '/../storage/logs',
 ];
 
 foreach ($storagePaths as $path) {
