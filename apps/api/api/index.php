@@ -25,11 +25,12 @@ $app = require_once __DIR__ . '/../bootstrap/app.php';
 
 $app->useStoragePath($tmpStorage);
 
-$config = $app->make('config');
-$config->set('view.compiled', $tmpStorage . '/framework/views');
-$config->set('session.path', $tmpStorage . '/framework/sessions');
-$config->set('cache.stores.file.path', $tmpStorage . '/framework/cache/data');
-$config->set('logging.channels.single.path', $tmpStorage . '/logs/laravel.log');
-$config->set('logging.channels.stderr.path', $tmpStorage . '/logs/laravel.log');
+$app->booted(function ($app) use ($tmpStorage) {
+    $config = $app['config'];
+    $config->set('view.compiled', $tmpStorage . '/framework/views');
+    $config->set('session.path', $tmpStorage . '/framework/sessions');
+    $config->set('cache.stores.file.path', $tmpStorage . '/framework/cache/data');
+    $config->set('logging.channels.single.path', $tmpStorage . '/logs/laravel.log');
+});
 
 $app->handleRequest(Request::capture());
