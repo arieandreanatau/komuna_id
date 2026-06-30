@@ -6,19 +6,19 @@ define('LARAVEL_START', microtime(true));
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$storagePaths = [
-    __DIR__ . '/../storage/framework/cache/data',
-    __DIR__ . '/../storage/framework/sessions',
-    __DIR__ . '/../storage/framework/views',
-    __DIR__ . '/../storage/logs',
-];
+$tmpStorage = '/tmp/storage';
+$storageDir = __DIR__ . '/../storage';
 
-foreach ($storagePaths as $path) {
-    if (!is_dir($path)) {
-        @mkdir($path, 0755, true);
-    }
+if (!is_dir($tmpStorage)) {
+    @mkdir($tmpStorage, 0755, true);
+    @mkdir($tmpStorage . '/framework/cache/data', 0755, true);
+    @mkdir($tmpStorage . '/framework/sessions', 0755, true);
+    @mkdir($tmpStorage . '/framework/views', 0755, true);
+    @mkdir($tmpStorage . '/logs', 0755, true);
 }
 
 $app = require_once __DIR__ . '/../bootstrap/app.php';
+
+$app->bind('path.storage', fn () => $tmpStorage);
 
 $app->handleRequest(Request::capture());
