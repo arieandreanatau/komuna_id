@@ -15,7 +15,7 @@ class CommunityProfileController extends Controller
 {
     public function show(Request $request, int $communityId): JsonResponse
     {
-        $community = Community::with(['category', 'owner:id,name,email'])
+        $community = Community::with(['category', 'owner:id,full_name,username,email'])
             ->findOrFail($communityId);
 
         $this->authorize('view', $community);
@@ -46,7 +46,7 @@ class CommunityProfileController extends Controller
 
         AuditLogService::updated($community, $oldValues, $request);
 
-        return $this->successResponse($community->fresh()->load(['category', 'owner:id,name']), 'Profil komunitas berhasil diperbarui');
+        return $this->successResponse($community->fresh()->load(['category', 'owner:id,full_name,username']), 'Profil komunitas berhasil diperbarui');
     }
 
     public function updateLogo(Request $request, int $communityId): JsonResponse
@@ -120,7 +120,7 @@ class CommunityProfileController extends Controller
 
     public function preview(Request $request, int $communityId): JsonResponse
     {
-        $community = Community::with(['category', 'owner:id,name'])
+        $community = Community::with(['category', 'owner:id,full_name,username'])
             ->where('status', 'approved')
             ->where('is_public', true)
             ->findOrFail($communityId);

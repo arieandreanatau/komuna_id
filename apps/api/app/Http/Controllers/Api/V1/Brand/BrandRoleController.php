@@ -26,7 +26,7 @@ class BrandRoleController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $members = BrandMember::with('user:id,name,email')
+        $members = BrandMember::with('user:id,full_name,username,email')
             ->where('brand_id', $brandId)
             ->where('status', 'active')
             ->get();
@@ -119,7 +119,7 @@ class BrandRoleController extends Controller
             $request
         );
 
-        return $this->successResponse($member->fresh()->load('user:id,name,email'), 'Role berhasil diperbarui');
+        return $this->successResponse($member->fresh()->load('user:id,full_name,username,email'), 'Role berhasil diperbarui');
     }
 
     public function destroy(Request $request, int $brandId, int $memberId): JsonResponse
@@ -176,7 +176,7 @@ class BrandRoleController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $histories = BrandRoleHistory::with(['user:id,name,email', 'performer:id,name'])
+        $histories = BrandRoleHistory::with(['user:id,full_name,username,email', 'performer:id,full_name,username'])
             ->where('brand_id', $brandId)
             ->latest()
             ->paginate(min((int) $request->get('per_page', 15), 50));

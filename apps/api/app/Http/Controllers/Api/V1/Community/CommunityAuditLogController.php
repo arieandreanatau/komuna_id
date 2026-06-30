@@ -18,7 +18,7 @@ class CommunityAuditLogController extends Controller
 
         $this->authorize('viewAuditLog', $community);
 
-        $query = AuditLog::with('user:id,name,email')
+        $query = AuditLog::with('user:id,full_name,username,email')
             ->where(function ($q) use ($communityId) {
                 $q->where('auditable_type', 'App\\Models\\Community')
                     ->where('auditable_id', $communityId)

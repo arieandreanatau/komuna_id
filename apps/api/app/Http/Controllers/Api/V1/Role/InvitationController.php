@@ -86,7 +86,7 @@ class InvitationController extends Controller
 
     public function myInvitations(Request $request): JsonResponse
     {
-        $invitations = Invitation::with('role', 'inviter:id,name,email')
+        $invitations = Invitation::with('role', 'inviter:id,full_name,username,email')
             ->where('email', $request->user()->email)
             ->where('status', 'pending')
             ->where('expires_at', '>', now())

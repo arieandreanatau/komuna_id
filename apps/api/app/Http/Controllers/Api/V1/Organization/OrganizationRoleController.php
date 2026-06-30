@@ -26,7 +26,7 @@ class OrganizationRoleController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $members = OrganizationMember::with('user:id,name,email')
+        $members = OrganizationMember::with('user:id,full_name,username,email')
             ->where('organization_id', $organizationId)
             ->where('status', 'active')
             ->get();
@@ -119,7 +119,7 @@ class OrganizationRoleController extends Controller
             $request
         );
 
-        return $this->successResponse($member->fresh()->load('user:id,name,email'), 'Role berhasil diperbarui');
+        return $this->successResponse($member->fresh()->load('user:id,full_name,username,email'), 'Role berhasil diperbarui');
     }
 
     public function destroy(Request $request, int $organizationId, int $memberId): JsonResponse
@@ -176,7 +176,7 @@ class OrganizationRoleController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $histories = OrganizationRoleHistory::with(['user:id,name,email', 'performer:id,name'])
+        $histories = OrganizationRoleHistory::with(['user:id,full_name,username,email', 'performer:id,full_name,username'])
             ->where('organization_id', $organizationId)
             ->latest()
             ->paginate(min((int) $request->get('per_page', 15), 50));

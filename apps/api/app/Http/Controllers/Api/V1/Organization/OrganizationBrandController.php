@@ -24,7 +24,7 @@ class OrganizationBrandController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $query = Brand::with('owner:id,name,email')
+        $query = Brand::with('owner:id,full_name,username,email')
             ->where('organization_id', $organizationId);
 
         if ($request->has('status')) {
@@ -86,7 +86,7 @@ class OrganizationBrandController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $brand = Brand::with(['owner:id,name,email', 'members.user:id,name,email'])
+        $brand = Brand::with(['owner:id,full_name,username,email', 'members.user:id,full_name,username,email'])
             ->where('organization_id', $organizationId)
             ->findOrFail($brandId);
 

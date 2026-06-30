@@ -16,7 +16,7 @@ class OrganizationProfileController extends Controller
 {
     public function show(Request $request, int $organizationId): JsonResponse
     {
-        $org = Organization::with(['owner:id,name,email', 'members.user:id,name,email'])
+        $org = Organization::with(['owner:id,full_name,username,email', 'members.user:id,full_name,username,email'])
             ->findOrFail($organizationId);
 
         return $this->successResponse($org);
@@ -51,7 +51,7 @@ class OrganizationProfileController extends Controller
 
         AuditLogService::updated($org, $oldValues, $request);
 
-        return $this->successResponse($org->fresh()->load(['owner:id,name']), 'Profil organisasi berhasil diperbarui');
+        return $this->successResponse($org->fresh()->load(['owner:id,full_name,username']), 'Profil organisasi berhasil diperbarui');
     }
 
     public function updateLogo(Request $request, int $organizationId): JsonResponse

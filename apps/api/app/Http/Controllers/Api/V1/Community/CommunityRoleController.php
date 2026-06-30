@@ -24,7 +24,7 @@ class CommunityRoleController extends Controller
 
         $this->authorize('manageRoles', $community);
 
-        $assignments = CommunityRoleAssignment::with(['user:id,name,email', 'role:id,name,slug', 'assigner:id,name'])
+        $assignments = CommunityRoleAssignment::with(['user:id,full_name,username,email', 'role:id,name,slug', 'assigner:id,full_name,username'])
             ->where('community_id', $communityId)
             ->where('is_active', true)
             ->get();
@@ -110,7 +110,7 @@ class CommunityRoleController extends Controller
             'data' => ['community_id' => $communityId, 'role_slug' => $validated['role_slug']],
         ]);
 
-        return $this->successResponse($assignment->load(['user:id,name,email', 'role:id,name,slug']), 'Role berhasil di-assign', 201);
+        return $this->successResponse($assignment->load(['user:id,full_name,username,email', 'role:id,name,slug']), 'Role berhasil di-assign', 201);
     }
 
     public function update(Request $request, int $communityId, int $assignmentId): JsonResponse
@@ -151,7 +151,7 @@ class CommunityRoleController extends Controller
             );
         }
 
-        return $this->successResponse($assignment->fresh()->load(['user:id,name,email', 'role:id,name,slug']), 'Role berhasil diperbarui');
+        return $this->successResponse($assignment->fresh()->load(['user:id,full_name,username,email', 'role:id,name,slug']), 'Role berhasil diperbarui');
     }
 
     public function destroy(Request $request, int $communityId, int $assignmentId): JsonResponse
@@ -196,7 +196,7 @@ class CommunityRoleController extends Controller
 
         $this->authorize('viewAuditLog', $community);
 
-        $histories = CommunityRoleHistory::with(['user:id,name,email', 'role:id,name,slug', 'changer:id,name'])
+        $histories = CommunityRoleHistory::with(['user:id,full_name,username,email', 'role:id,name,slug', 'changer:id,full_name,username'])
             ->where('community_id', $communityId)
             ->latest()
             ->paginate(min((int) $request->get('per_page', 15), 50));

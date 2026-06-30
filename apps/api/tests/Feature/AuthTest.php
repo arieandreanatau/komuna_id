@@ -15,6 +15,7 @@ class AuthTest extends TestCase
     public function test_user_can_register(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
+            'username' => 'testuser',
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password123',
@@ -25,7 +26,7 @@ class AuthTest extends TestCase
             ->assertJsonStructure([
                 'success',
                 'message',
-                'data' => ['user' => ['id', 'uuid', 'name', 'email', 'status'], 'token'],
+                'data' => ['user' => ['id', 'uuid', 'username', 'email', 'status'], 'token'],
             ]);
 
         $this->assertDatabaseHas('users', ['email' => 'test@example.com']);
@@ -53,6 +54,7 @@ class AuthTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/v1/auth/login', [
+            'login' => 'test@example.com',
             'email' => 'test@example.com',
             'password' => 'password123',
         ]);

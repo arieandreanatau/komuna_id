@@ -16,7 +16,7 @@ class BrandProfileController extends Controller
 {
     public function show(Request $request, int $brandId): JsonResponse
     {
-        $brand = Brand::with(['owner:id,name,email', 'organization:id,name', 'members.user:id,name,email'])
+        $brand = Brand::with(['owner:id,full_name,username,email', 'organization:id,name', 'members.user:id,full_name,username,email'])
             ->findOrFail($brandId);
 
         return $this->successResponse($brand);
@@ -52,7 +52,7 @@ class BrandProfileController extends Controller
 
         AuditLogService::updated($brand, $oldValues, $request);
 
-        return $this->successResponse($brand->fresh()->load(['owner:id,name']), 'Profil brand berhasil diperbarui');
+        return $this->successResponse($brand->fresh()->load(['owner:id,full_name,username']), 'Profil brand berhasil diperbarui');
     }
 
     public function updateLogo(Request $request, int $brandId): JsonResponse

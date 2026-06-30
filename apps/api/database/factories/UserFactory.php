@@ -26,7 +26,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         $name = fake()->name();
-        $username = strtolower(preg_replace('/[^a-zA-Z0-9]/', '_', $name)) . Str::random(4);
+        $username = strtolower(preg_replace('/[^a-zA-Z0-9]/', '_', $name)).Str::random(4);
 
         return [
             'username' => $username,

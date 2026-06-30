@@ -21,7 +21,7 @@ class BrandTeamController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $query = BrandMember::with('user:id,name,email,status')
+        $query = BrandMember::with('user:id,full_name,username,email,status')
             ->where('brand_id', $brandId);
 
         if ($request->has('status')) {
@@ -31,7 +31,7 @@ class BrandTeamController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -50,7 +50,7 @@ class BrandTeamController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $member = BrandMember::with('user:id,name,email,status')
+        $member = BrandMember::with('user:id,full_name,username,email,status')
             ->where('brand_id', $brandId)
             ->where('id', $memberId)
             ->firstOrFail();

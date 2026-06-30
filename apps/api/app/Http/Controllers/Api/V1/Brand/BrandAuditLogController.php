@@ -20,7 +20,7 @@ class BrandAuditLogController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $query = AuditLog::with('user:id,name,email')
+        $query = AuditLog::with('user:id,full_name,username,email')
             ->where(function ($q) use ($brandId) {
                 $q->where('auditable_type', 'App\\Models\\Brand')
                     ->where('auditable_id', $brandId)

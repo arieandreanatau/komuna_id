@@ -20,7 +20,7 @@ class OrganizationAuditLogController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $query = AuditLog::with('user:id,name,email')
+        $query = AuditLog::with('user:id,full_name,username,email')
             ->where(function ($q) use ($organizationId) {
                 $q->where('auditable_type', 'App\\Models\\Organization')
                     ->where('auditable_id', $organizationId)

@@ -63,7 +63,7 @@ class CommunityReportController extends Controller
             ->pluck('count', 'status')
             ->toArray();
 
-        $recentJoins = CommunityMember::with('user:id,name')
+        $recentJoins = CommunityMember::with('user:id,full_name,username')
             ->where('community_id', $communityId)
             ->where('status', 'active')
             ->latest('joined_at')
@@ -110,7 +110,7 @@ class CommunityReportController extends Controller
         $type = $request->get('type', 'members');
 
         if ($type === 'members') {
-            $members = CommunityMember::with('user:id,name,email')
+            $members = CommunityMember::with('user:id,full_name,username,email')
                 ->where('community_id', $communityId)
                 ->where('status', 'active')
                 ->get();

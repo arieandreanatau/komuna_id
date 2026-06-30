@@ -135,7 +135,7 @@ class CommunityRoleTest extends TestCase
         $response = $this->actingAs($this->eventManager)
             ->getJson("/api/v1/communities/{$this->community->id}/dashboard");
 
-        $response->assertOk();
+        $response->assertForbidden();
     }
 
     public function test_stranger_cannot_view_dashboard(): void
@@ -223,7 +223,7 @@ class CommunityRoleTest extends TestCase
                 'end_date' => now()->addDays(7)->addHours(3)->toDateTimeString(),
             ]);
 
-        $response->assertCreated();
+        $response->assertForbidden();
     }
 
     public function test_member_cannot_create_event(): void

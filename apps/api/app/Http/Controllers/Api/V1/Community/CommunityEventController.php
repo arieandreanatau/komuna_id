@@ -20,7 +20,7 @@ class CommunityEventController extends Controller
     {
         $community = Community::findOrFail($communityId);
 
-        $query = Event::with(['organizer:id,name'])
+        $query = Event::with(['organizer:id,full_name,username'])
             ->where('community_id', $communityId);
 
         if (! $request->user()->canManageCommunityEvents($communityId)) {
@@ -78,12 +78,12 @@ class CommunityEventController extends Controller
 
         AuditLogService::created($event, $request);
 
-        return $this->successResponse($event->load('organizer:id,name'), 'Event berhasil dibuat', 201);
+        return $this->successResponse($event->load('organizer:id,full_name,username'), 'Event berhasil dibuat', 201);
     }
 
     public function show(Request $request, int $communityId, int $eventId): JsonResponse
     {
-        $event = Event::with(['organizer:id,name', 'tickets'])
+        $event = Event::with(['organizer:id,full_name,username', 'tickets'])
             ->where('community_id', $communityId)
             ->where('id', $eventId)
             ->firstOrFail();
@@ -171,7 +171,7 @@ class CommunityEventController extends Controller
 
         $this->authorize('manageParticipants', $event);
 
-        $participants = EventRegistration::with(['user:id,name,email', 'ticket'])
+        $participants = EventRegistration::with(['user:id,full_name,username,email', 'ticket'])
             ->where('event_id', $eventId);
 
         if ($request->has('status')) {
@@ -264,7 +264,7 @@ class CommunityEventController extends Controller
 
         $this->authorize('manageParticipants', $event);
 
-        $checkins = EventRegistration::with(['user:id,name,email'])
+        $checkins = EventRegistration::with(['user:id,full_name,username,email'])
             ->where('event_id', $eventId)
             ->where('status', 'checked_in')
             ->latest('checked_in_at')

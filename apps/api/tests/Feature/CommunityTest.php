@@ -33,6 +33,7 @@ class CommunityTest extends TestCase
             'name' => 'Test Community',
             'description' => 'A test community',
             'category_id' => $category->id,
+            'reason' => 'Testing community creation',
         ]);
 
         $response->assertCreated();

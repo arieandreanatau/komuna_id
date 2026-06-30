@@ -21,7 +21,7 @@ class OrganizationTeamController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $query = OrganizationMember::with('user:id,name,email,status')
+        $query = OrganizationMember::with('user:id,full_name,username,email,status')
             ->where('organization_id', $organizationId);
 
         if ($request->has('status')) {
@@ -31,7 +31,7 @@ class OrganizationTeamController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -50,7 +50,7 @@ class OrganizationTeamController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        $member = OrganizationMember::with('user:id,name,email,status')
+        $member = OrganizationMember::with('user:id,full_name,username,email,status')
             ->where('organization_id', $organizationId)
             ->where('id', $memberId)
             ->firstOrFail();

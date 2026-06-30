@@ -24,14 +24,14 @@ class CommunityDashboardController extends Controller
         $activeEvents = $community->events()->where('status', 'published')->count();
 
         $recentMembers = $community->members()
-            ->with('user:id,name,email')
+            ->with('user:id,full_name,username,email')
             ->where('status', 'active')
             ->latest('joined_at')
             ->limit(5)
             ->get();
 
         $recentJoinRequests = $community->joinRequests()
-            ->with('user:id,name,email')
+            ->with('user:id,full_name,username,email')
             ->where('status', 'pending')
             ->latest()
             ->limit(5)

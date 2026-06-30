@@ -41,7 +41,7 @@ class AdminController extends Controller
                 'pending_role_requests' => RoleRequest::where('status', 'pending')->count(),
                 'total_articles' => Article::count(),
             ],
-            'recent_users' => User::latest()->limit(5)->get(['id', 'name', 'email', 'status', 'created_at']),
+            'recent_users' => User::latest()->limit(5)->get(['id', 'full_name', 'username', 'email', 'status', 'created_at']),
         ]);
     }
 
@@ -52,7 +52,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }

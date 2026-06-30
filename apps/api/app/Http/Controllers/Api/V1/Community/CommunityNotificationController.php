@@ -55,7 +55,7 @@ class CommunityNotificationController extends Controller
     {
         $community = Community::findOrFail($communityId);
 
-        $query = CommunityAnnouncement::with('author:id,name')
+        $query = CommunityAnnouncement::with('author:id,full_name,username')
             ->where('community_id', $communityId)
             ->where('status', 'published');
 
@@ -109,6 +109,6 @@ class CommunityNotificationController extends Controller
 
         AuditLogService::created($announcement, $request);
 
-        return $this->successResponse($announcement->load('author:id,name'), 'Pengumuman berhasil dibuat', 201);
+        return $this->successResponse($announcement->load('author:id,full_name,username'), 'Pengumuman berhasil dibuat', 201);
     }
 }

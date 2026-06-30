@@ -21,7 +21,7 @@ class CommunityMemberController extends Controller
 
         $this->authorize('manageMembers', $community);
 
-        $query = CommunityMember::with('user:id,name,email,status')
+        $query = CommunityMember::with('user:id,full_name,username,email,status')
             ->where('community_id', $communityId);
 
         if ($request->has('status')) {
@@ -31,7 +31,7 @@ class CommunityMemberController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -48,7 +48,7 @@ class CommunityMemberController extends Controller
 
         $this->authorize('manageMembers', $community);
 
-        $member = CommunityMember::with('user:id,name,email,status')
+        $member = CommunityMember::with('user:id,full_name,username,email,status')
             ->where('community_id', $communityId)
             ->where('id', $memberId)
             ->firstOrFail();
@@ -62,7 +62,7 @@ class CommunityMemberController extends Controller
 
         $this->authorize('manageMembers', $community);
 
-        $query = CommunityJoinRequest::with('user:id,name,email')
+        $query = CommunityJoinRequest::with('user:id,full_name,username,email')
             ->where('community_id', $communityId);
 
         if ($request->has('status')) {
@@ -230,7 +230,7 @@ class CommunityMemberController extends Controller
 
         $this->authorize('manageMembers', $community);
 
-        $allMembers = CommunityMember::with('user:id,name,email')
+        $allMembers = CommunityMember::with('user:id,full_name,username,email')
             ->where('community_id', $communityId)
             ->orderBy('created_at', 'desc')
             ->paginate(min((int) $request->get('per_page', 15), 50));
