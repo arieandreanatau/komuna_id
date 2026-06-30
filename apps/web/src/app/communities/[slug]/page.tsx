@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { fetchApi, getToken } from "@/lib/api";
 
 interface Community {
   id: number;
@@ -23,6 +23,10 @@ export default function CommunityDetailPage() {
   const params = useParams();
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMember, setIsMember] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">("success");
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/communities/${params.slug}`)
@@ -32,6 +36,72 @@ export default function CommunityDetailPage() {
       })
       .finally(() => setLoading(false));
   }, [params.slug]);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token || !community) return;
+    fetchApi<{ data: Array<{ community_id: number }> }>(`/me/communities`)
+      .then((res) => {
+        const memberships = res.data?.data || [];
+        setIsMember(memberships.some((m) => m.community_id === community.id));
+      })
+      .catch(() => {});
+  }, [community]);
+
+  const handleJoin = async () => {
+    if (!community) return;
+    setJoining(true);
+    setMessage("");
+
+    try {
+      const token = getToken();
+      if (!token) {
+        setMessage("Silakan login terlebih dahulu");
+        setMessageType("error");
+        return;
+      }
+
+      await fetchApi(`/communities/${community.id}/join`, {
+        method: "POST",
+      });
+
+      if (community.join_mode === "approval_required") {
+        setMessage("Permintaan join terkirim. Menunggu persetujuan.");
+        setMessageType("success");
+      } else {
+        setMessage("Berhasil bergabung!");
+        setMessageType("success");
+        setIsMember(true);
+        setCommunity({ ...community, member_count: community.member_count + 1 });
+      }
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setMessage(error.message || "Gagal bergabung");
+      setMessageType("error");
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const handleLeave = async () => {
+    if (!community) return;
+    setJoining(true);
+    setMessage("");
+
+    try {
+      await fetchApi(`/communities/${community.id}/leave`, { method: "POST" });
+      setMessage("Berhasil keluar dari komunitas");
+      setMessageType("success");
+      setIsMember(false);
+      setCommunity({ ...community, member_count: community.member_count - 1 });
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setMessage(error.message || "Gagal keluar");
+      setMessageType("error");
+    } finally {
+      setJoining(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -94,9 +164,29 @@ export default function CommunityDetailPage() {
 
             <div className="space-y-4">
               <div className="rounded-xl border border-border bg-white p-6">
-                <button className="w-full rounded-lg bg-brand-blue py-2.5 text-sm font-semibold text-white hover:bg-brand-blue/90">
-                  {community.join_mode === "open" ? "Gabung Sekarang" : "Ajukan Keanggotaan"}
-                </button>
+                {message && (
+                  <div className={`mb-3 rounded-lg p-3 text-sm ${messageType === "success" ? "bg-brand-teal/10 text-brand-teal" : "bg-red-50 text-red-600"}`}>
+                    {message}
+                  </div>
+                )}
+
+                {isMember ? (
+                  <button
+                    onClick={handleLeave}
+                    disabled={joining}
+                    className="w-full rounded-lg border border-red-300 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    {joining ? "Memproses..." : "Keluar dari Komunitas"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleJoin}
+                    disabled={joining || community.join_mode === "invite_only"}
+                    className="w-full rounded-lg bg-brand-blue py-2.5 text-sm font-semibold text-white hover:bg-brand-blue/90 disabled:opacity-50"
+                  >
+                    {joining ? "Memproses..." : community.join_mode === "open" ? "Gabung Sekarang" : community.join_mode === "approval_required" ? "Ajukan Keanggotaan" : "Invite Only"}
+                  </button>
+                )}
               </div>
 
               <div className="rounded-xl border border-border bg-white p-6">

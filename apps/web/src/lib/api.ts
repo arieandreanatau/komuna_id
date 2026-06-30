@@ -11,7 +11,7 @@ export async function fetchApi<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<ApiResponse<T>> {
-  const { token, ...fetchOptions } = options;
+  const { token: customToken, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -19,6 +19,7 @@ export async function fetchApi<T>(
     ...(options.headers as Record<string, string>),
   };
 
+  const token = customToken || getToken();
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -52,4 +53,8 @@ export function setToken(token: string): void {
 
 export function removeToken(): void {
   localStorage.removeItem("auth_token");
+}
+
+export function isAuthenticated(): boolean {
+  return !!getToken();
 }

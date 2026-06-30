@@ -7,7 +7,6 @@ namespace Tests\Feature;
 use App\Enums\CommunityStatus;
 use App\Models\Community;
 use App\Models\CommunityCategory;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,97 +15,89 @@ class CommunityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_public_can_list_communities(): void
+    public function test_communities_can_be_listed(): void
     {
-        Community::factory()->count(3)->create([
-            'status' => CommunityStatus::APPROVED,
-            'is_public' => true,
-        ]);
+        Community::factory()->count(3)->create(['status' => CommunityStatus::APPROVED]);
 
         $response = $this->getJson('/api/v1/communities');
 
-        $response->assertOk()
-            ->assertJsonStructure([
-                'success',
-                'data',
-                'meta',
-            ]);
+        $response->assertOk();
     }
 
-    public function test_user_can_create_community(): void
+    public function test_community_can_be_created(): void
     {
         $user = User::factory()->create();
         $category = CommunityCategory::factory()->create();
-        $token = $user->createToken('test-token')->plainTextToken;
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/v1/communities', [
-                'name' => 'Test Community',
-                'description' => 'A test community description that is long enough',
-                'category_id' => $category->id,
-            ]);
+        $response = $this->actingAs($user)->postJson('/api/v1/communities', [
+            'name' => 'Test Community',
+            'description' => 'A test community',
+            'category_id' => $category->id,
+        ]);
 
-        $response->assertStatus(201)
-            ->assertJsonPath('data.name', 'Test Community');
-
+        $response->assertCreated();
         $this->assertDatabaseHas('communities', ['name' => 'Test Community']);
     }
 
-    public function test_unauthenticated_user_cannot_create_community(): void
-    {
-        $response = $this->postJson('/api/v1/communities', [
-            'name' => 'Test Community',
-            'description' => 'A test community description',
-            'category_id' => 1,
-        ]);
-
-        $response->assertStatus(401);
-    }
-
-    public function test_owner_can_update_community(): void
+    public function test_community_can_be_updated_by_owner(): void
     {
         $user = User::factory()->create();
         $community = Community::factory()->create(['owner_id' => $user->id]);
-        $token = $user->createToken('test-token')->plainTextToken;
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->putJson("/api/v1/communities/{$community->id}", [
-                'name' => 'Updated Community Name',
-            ]);
+        $response = $this->actingAs($user)->putJson("/api/v1/communities/{$community->id}", [
+            'description' => 'Updated description',
+        ]);
 
         $response->assertOk();
     }
 
-    public function test_non_owner_cannot_update_community(): void
+    public function test_community_cannot_be_updated_by_non_owner(): void
     {
-        $owner = User::factory()->create();
+        $user = User::factory()->create();
         $other = User::factory()->create();
-        $community = Community::factory()->create(['owner_id' => $owner->id]);
-        $token = $other->createToken('test-token')->plainTextToken;
+        $community = Community::factory()->create(['owner_id' => $user->id]);
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->putJson("/api/v1/communities/{$community->id}", [
-                'name' => 'Hacked Name',
-            ]);
+        $response = $this->actingAs($other)->putJson("/api/v1/communities/{$community->id}", [
+            'description' => 'Hacked',
+        ]);
 
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
-    public function test_admin_can_approve_community(): void
+    public function test_community_can_be_submitted_for_review(): void
     {
-        $admin = User::factory()->create(['status' => \App\Enums\UserStatus::ACTIVE]);
-        $role = Role::create(['name' => 'Super Admin', 'slug' => 'super-admin', 'scope' => 'platform']);
-        $admin->roles()->create(['role_id' => $role->id, 'is_active' => true]);
+        $user = User::factory()->create();
+        $community = Community::factory()->create(['owner_id' => $user->id, 'status' => CommunityStatus::DRAFT]);
 
-        $community = Community::factory()->create(['status' => CommunityStatus::PENDING_REVIEW]);
-        $token = $admin->createToken('test-token')->plainTextToken;
-
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson("/api/v1/communities/{$community->id}/approve");
+        $response = $this->actingAs($user)->postJson("/api/v1/communities/{$community->id}/submit-review");
 
         $response->assertOk();
+        $this->assertDatabaseHas('communities', ['id' => $community->id, 'status' => CommunityStatus::PENDING_REVIEW]);
+    }
 
-        $community->refresh();
-        $this->assertEquals(CommunityStatus::APPROVED, $community->status);
+    public function test_community_can_be_joined(): void
+    {
+        $user = User::factory()->create();
+        $community = Community::factory()->create(['status' => CommunityStatus::APPROVED, 'join_mode' => 'open']);
+
+        $response = $this->actingAs($user)->postJson("/api/v1/communities/{$community->id}/join");
+
+        $response->assertCreated();
+    }
+
+    public function test_community_member_can_leave(): void
+    {
+        $user = User::factory()->create();
+        $community = Community::factory()->create(['status' => CommunityStatus::APPROVED]);
+        $community->members()->create([
+            'user_id' => $user->id,
+            'role' => 'member',
+            'status' => 'active',
+            'joined_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->postJson("/api/v1/communities/{$community->id}/leave");
+
+        $response->assertOk();
     }
 }

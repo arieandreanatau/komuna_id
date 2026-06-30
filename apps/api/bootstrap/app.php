@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureBrandRole;
+use App\Http\Middleware\EnsureCommunityRole;
+use App\Http\Middleware\EnsureOrganizationRole;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\ValidateFileUpload;
@@ -21,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'admin' => EnsureUserIsAdmin::class,
+            'community-role' => EnsureCommunityRole::class,
+            'org-role' => EnsureOrganizationRole::class,
+            'brand-role' => EnsureBrandRole::class,
             'file.upload' => ValidateFileUpload::class,
         ]);
     })

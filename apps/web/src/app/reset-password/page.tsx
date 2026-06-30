@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || "";
+  const emailFromUrl = searchParams.get("email") || "";
+  const [email, setEmail] = useState(emailFromUrl);
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
-  const [token] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -40,6 +42,24 @@ export default function ResetPasswordPage() {
       setLoading(false);
     }
   };
+
+  if (!token) {
+    return (
+      <>
+        <Navbar />
+        <main className="flex flex-1 items-center justify-center bg-brand-light-gray px-4 py-16">
+          <div className="w-full max-w-md text-center">
+            <h1 className="text-2xl font-semibold text-brand-navy">Token Tidak Valid</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Link reset password tidak valid atau sudah kedaluwarsa.</p>
+            <a href="/forgot-password" className="mt-6 inline-flex rounded-lg bg-brand-blue px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-blue/90">
+              Minta Link Baru
+            </a>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -73,5 +93,17 @@ export default function ResetPasswordPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-brand-light-gray">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-blue border-t-transparent" />
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

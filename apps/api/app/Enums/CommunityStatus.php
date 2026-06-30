@@ -12,6 +12,7 @@ enum CommunityStatus: string
     case REJECTED = 'rejected';
     case REVISION_NEEDED = 'revision_needed';
     case ARCHIVED = 'archived';
+    case TEMPORARILY_CLOSED = 'temporarily_closed';
 
     public function label(): string
     {
@@ -22,6 +23,7 @@ enum CommunityStatus: string
             self::REJECTED => 'Rejected',
             self::REVISION_NEEDED => 'Revision Needed',
             self::ARCHIVED => 'Archived',
+            self::TEMPORARILY_CLOSED => 'Temporarily Closed',
         };
     }
 }

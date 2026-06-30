@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { fetchApi, getToken } from "@/lib/api";
 
 interface Event {
   id: number;
@@ -28,6 +29,10 @@ export default function EventDetailPage() {
   const params = useParams();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [registering, setRegistering] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">("success");
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/${params.slug}`)
@@ -38,6 +43,17 @@ export default function EventDetailPage() {
       .finally(() => setLoading(false));
   }, [params.slug]);
 
+  useEffect(() => {
+    const token = getToken();
+    if (!token || !event) return;
+    fetchApi<{ data: Array<{ event_id: number; status: string }> }>(`/me/events`)
+      .then((res) => {
+        const registrations = res.data?.data || [];
+        setIsRegistered(registrations.some((r) => r.event_id === event.id && r.status !== "cancelled"));
+      })
+      .catch(() => {});
+  }, [event]);
+
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("id-ID", {
       weekday: "long",
@@ -47,6 +63,53 @@ export default function EventDetailPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
+
+  const handleRegister = async () => {
+    if (!event) return;
+    setRegistering(true);
+    setMessage("");
+
+    try {
+      const token = getToken();
+      if (!token) {
+        setMessage("Silakan login terlebih dahulu");
+        setMessageType("error");
+        return;
+      }
+
+      await fetchApi(`/events/${event.id}/register`, { method: "POST" });
+      setMessage("Berhasil terdaftar di event!");
+      setMessageType("success");
+      setIsRegistered(true);
+      setEvent({ ...event, current_participants: event.current_participants + 1 });
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setMessage(error.message || "Gagal mendaftar");
+      setMessageType("error");
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!event) return;
+    setRegistering(true);
+    setMessage("");
+
+    try {
+      await fetchApi(`/events/${event.id}/cancel-registration`, { method: "POST" });
+      setMessage("Pendaftaran dibatalkan");
+      setMessageType("success");
+      setIsRegistered(false);
+      setEvent({ ...event, current_participants: Math.max(0, event.current_participants - 1) });
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setMessage(error.message || "Gagal membatalkan");
+      setMessageType("error");
+    } finally {
+      setRegistering(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -71,6 +134,8 @@ export default function EventDetailPage() {
       </>
     );
   }
+
+  const isFull = event.max_participants !== null && event.current_participants >= event.max_participants;
 
   return (
     <>
@@ -119,9 +184,35 @@ export default function EventDetailPage() {
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">per tiket</p>
                 </div>
-                <button className="mt-4 w-full rounded-lg bg-brand-blue py-2.5 text-sm font-semibold text-white hover:bg-brand-blue/90">
-                  Daftar Sekarang
-                </button>
+
+                {message && (
+                  <div className={`mt-3 rounded-lg p-3 text-sm ${messageType === "success" ? "bg-brand-teal/10 text-brand-teal" : "bg-red-50 text-red-600"}`}>
+                    {message}
+                  </div>
+                )}
+
+                {isRegistered ? (
+                  <div className="mt-4 space-y-2">
+                    <div className="rounded-lg bg-brand-teal/10 p-3 text-center">
+                      <p className="text-sm font-medium text-brand-teal">Anda sudah terdaftar</p>
+                    </div>
+                    <button
+                      onClick={handleCancel}
+                      disabled={registering}
+                      className="w-full rounded-lg border border-red-300 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      {registering ? "Memproses..." : "Batalkan Pendaftaran"}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleRegister}
+                    disabled={registering || isFull}
+                    className="mt-4 w-full rounded-lg bg-brand-blue py-2.5 text-sm font-semibold text-white hover:bg-brand-blue/90 disabled:opacity-50"
+                  >
+                    {registering ? "Memproses..." : isFull ? "Penuh" : "Daftar Sekarang"}
+                  </button>
+                )}
               </div>
 
               <div className="rounded-xl border border-border bg-white p-6">

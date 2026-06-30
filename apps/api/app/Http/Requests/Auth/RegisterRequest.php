@@ -16,23 +16,28 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
+            'username' => 'required|string|min:3|max:30|alpha_dash|unique:users,username',
+            'email' => 'nullable|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
+            'phone_number' => 'nullable|string|max:20',
+            'full_name' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'Nama wajib diisi',
-            'name.max' => 'Nama maksimal 255 karakter',
-            'email.required' => 'Email wajib diisi',
-            'email.email' => 'Format email tidak valid',
-            'email.unique' => 'Email sudah terdaftar',
-            'password.required' => 'Password wajib diisi',
-            'password.min' => 'Password minimal 8 karakter',
-            'password.confirmed' => 'Konfirmasi password tidak cocok',
+            'username.required' => 'Username wajib diisi.',
+            'username.min' => 'Username minimal 3 karakter.',
+            'username.max' => 'Username maksimal 30 karakter.',
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash, dan underscore.',
+            'username.unique' => 'Username sudah digunakan.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ];
     }
 }

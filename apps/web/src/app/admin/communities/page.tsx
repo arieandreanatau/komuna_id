@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { fetchApi } from "@/lib/api";
+import { toast } from "sonner";
 
 interface Community {
   id: number;
@@ -12,22 +13,41 @@ interface Community {
 }
 
 export default function AdminCommunitiesPage() {
-  const router = useRouter();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("pending_review");
 
-  useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) { router.push("/login"); return; }
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/communities?status=${filter}&per_page=50`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => { if (data.success) setCommunities(data.data || []); })
+  const loadCommunities = () => {
+    setLoading(true);
+    fetchApi<Community[]>(`/admin/communities?status=${filter}&per_page=50`)
+      .then((res) => setCommunities(res.data || []))
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, [router, filter]);
+  };
+
+  useEffect(() => {
+    loadCommunities();
+  }, [filter]);
+
+  const handleApprove = async (id: number) => {
+    try {
+      await fetchApi(`/admin/communities/${id}/approve`, { method: "POST" });
+      toast.success("Komunitas disetujui");
+      loadCommunities();
+    } catch {
+      toast.error("Gagal menyetujui komunitas");
+    }
+  };
+
+  const handleReject = async (id: number) => {
+    try {
+      await fetchApi(`/admin/communities/${id}/reject`, { method: "POST" });
+      toast.success("Komunitas ditolak");
+      loadCommunities();
+    } catch {
+      toast.error("Gagal menolak komunitas");
+    }
+  };
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-blue border-t-transparent" /></div>;
 
@@ -35,7 +55,7 @@ export default function AdminCommunitiesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-brand-navy">Manajemen Komunitas</h1>
-        <select value={filter} onChange={(e) => { setFilter(e.target.value); setLoading(true); }} className="rounded-lg border border-border px-4 py-2 text-sm">
+        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="rounded-lg border border-border px-4 py-2 text-sm">
           <option value="pending_review">Menunggu Review</option>
           <option value="approved">Disetujui</option>
           <option value="rejected">Ditolak</option>
@@ -69,8 +89,8 @@ export default function AdminCommunitiesPage() {
                 <td className="px-4 py-3 space-x-2">
                   {c.status === "pending_review" && (
                     <>
-                      <button className="rounded bg-brand-teal px-3 py-1 text-xs font-medium text-white hover:bg-brand-teal/90">Setujui</button>
-                      <button className="rounded bg-red-500 px-3 py-1 text-xs font-medium text-white hover:bg-red-600">Tolak</button>
+                      <button onClick={() => handleApprove(c.id)} className="rounded bg-brand-teal px-3 py-1 text-xs font-medium text-white hover:bg-brand-teal/90">Setujui</button>
+                      <button onClick={() => handleReject(c.id)} className="rounded bg-red-500 px-3 py-1 text-xs font-medium text-white hover:bg-red-600">Tolak</button>
                     </>
                   )}
                 </td>

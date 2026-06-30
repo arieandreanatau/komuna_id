@@ -20,6 +20,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use App\Services\EmailNotificationService;
+use App\Services\FileUploadService;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -27,14 +29,20 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'username' => $request->username,
+            'email' => $request->email ?? null,
             'password' => $request->password,
+            'full_name' => $request->full_name ?? null,
+            'phone_number' => $request->phone_number ?? null,
             'status' => UserStatus::ACTIVE,
-            'email_verified_at' => now(),
+            'verification_level' => 1,
         ]);
 
-        $user->profile()->create([]);
+        $user->profile()->create([
+            'full_name' => $request->full_name ?? null,
+            'phone' => $request->phone_number ?? null,
+            'location' => $request->location ?? null,
+        ]);
 
         $memberRole = Role::where('slug', 'member')->first();
         if ($memberRole) {
@@ -50,9 +58,11 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'uuid' => $user->uuid,
-                'name' => $user->name,
+                'username' => $user->username,
+                'full_name' => $user->full_name,
                 'email' => $user->email,
                 'status' => $user->status->value,
+                'verification_level' => $user->verification_level,
             ],
             'token' => $token,
         ], 'Registrasi berhasil', 201);
@@ -60,33 +70,39 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $user = User::where('email', $request->email)->first();
+        $login = $request->input('login');
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        $user = User::where('username', $login)
+            ->orWhere('email', $login)
+            ->first();
+
+        if (! $user) {
             throw ValidationException::withMessages([
-                'email' => ['Email atau password salah.'],
+                'login' => ['Akun tidak ditemukan.'],
+            ]);
+        }
+
+        if (! Hash::check($request->input('password'), $user->password)) {
+            throw ValidationException::withMessages([
+                'login' => ['Password salah.'],
             ]);
         }
 
         if ($user->status === UserStatus::SUSPENDED) {
-            return $this->errorResponse('Akun Anda telah ditangguhkan', 403);
+            return $this->errorResponse('Akun sedang dinonaktifkan. Hubungi admin.', 403);
         }
 
         if ($user->status === UserStatus::BANNED) {
-            return $this->errorResponse('Akun Anda telah diblokir', 403);
+            return $this->errorResponse('Akun telah diblokir. Hubungi admin.', 403);
         }
 
         $user->tokens()->delete();
         $token = $user->createToken('auth-token')->plainTextToken;
 
+        $user->load(['profile', 'roles.role']);
+
         return $this->successResponse([
-            'user' => [
-                'id' => $user->id,
-                'uuid' => $user->uuid,
-                'name' => $user->name,
-                'email' => $user->email,
-                'status' => $user->status->value,
-            ],
+            'user' => new \App\Http\Resources\UserResource($user),
             'token' => $token,
         ], 'Login berhasil');
     }
@@ -103,24 +119,7 @@ class AuthController extends Controller
         $user = $request->user();
         $user->load(['profile', 'roles.role']);
 
-        return $this->successResponse([
-            'id' => $user->id,
-            'uuid' => $user->uuid,
-            'name' => $user->name,
-            'email' => $user->email,
-            'status' => $user->status->value,
-            'email_verified_at' => $user->email_verified_at,
-            'profile' => $user->profile,
-            'roles' => $user->roles->map(fn ($ur) => [
-                'id' => $ur->role->id,
-                'name' => $ur->role->name,
-                'slug' => $ur->role->slug,
-                'scope' => $ur->role->scope,
-                'scope_type' => $ur->scope_type,
-                'scope_id' => $ur->scope_id,
-            ]),
-            'created_at' => $user->created_at,
-        ]);
+        return $this->successResponse(new \App\Http\Resources\UserResource($user));
     }
 
     public function updateProfile(ProfileUpdateRequest $request): JsonResponse
@@ -129,9 +128,32 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (isset($validated['name'])) {
-            $user->update(['name' => $validated['name']]);
-            unset($validated['name']);
+        if (isset($validated['full_name'])) {
+            $user->update(['full_name' => $validated['full_name']]);
+            unset($validated['full_name']);
+        }
+
+        if (isset($validated['username'])) {
+            $user->update(['username' => $validated['username']]);
+            unset($validated['username']);
+        }
+
+        if (isset($validated['phone_number'])) {
+            $user->update(['phone_number' => $validated['phone_number']]);
+            unset($validated['phone_number']);
+        }
+
+        if (isset($validated['email'])) {
+            $user->update(['email' => $validated['email']]);
+            unset($validated['email']);
+        }
+
+        if ($request->hasFile('avatar')) {
+            $existingAvatar = $user->profile?->avatar;
+            if ($existingAvatar) {
+                FileUploadService::delete($existingAvatar);
+            }
+            $validated['avatar'] = FileUploadService::uploadPublic($request->file('avatar'), 'avatars');
         }
 
         $user->profile()->updateOrCreate(
@@ -186,11 +208,17 @@ class AuthController extends Controller
 
     public function verifyEmail(Request $request): JsonResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
             return $this->successResponse(null, 'Email sudah terverifikasi');
         }
 
-        $request->user()->markEmailAsVerified();
+        $user->markEmailAsVerified();
+
+        if ($user->verification_level < 2) {
+            $user->update(['verification_level' => 2]);
+        }
 
         return $this->successResponse(null, 'Email berhasil diverifikasi');
     }
@@ -199,6 +227,10 @@ class AuthController extends Controller
     {
         if ($request->user()->hasVerifiedEmail()) {
             return $this->errorResponse('Email sudah terverifikasi', 400);
+        }
+
+        if (empty($request->user()->email)) {
+            return $this->errorResponse('Akun belum memiliki email. Tambahkan email terlebih dahulu.', 400);
         }
 
         $request->user()->sendEmailVerificationNotification();

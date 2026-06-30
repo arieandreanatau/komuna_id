@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { fetchApi } from "@/lib/api";
 
 interface User {
   id: number;
@@ -12,22 +12,16 @@ interface User {
 }
 
 export default function AdminUsersPage() {
-  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) { router.push("/login"); return; }
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users?per_page=50`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => { if (data.success) setUsers(data.data || []); })
+    fetchApi<User[]>("/admin/users?per_page=50")
+      .then((res) => setUsers(res.data || []))
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, [router]);
+  }, []);
 
   const filtered = users.filter(
     (u) => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())

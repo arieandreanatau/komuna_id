@@ -43,6 +43,10 @@ class Community extends Model
         'member_count',
         'is_public',
         'join_mode',
+        'reason',
+        'email',
+        'phone',
+        'instagram',
     ];
 
     protected function casts(): array
@@ -77,5 +81,53 @@ class Community extends Model
     public function joinRequests(): HasMany
     {
         return $this->hasMany(CommunityJoinRequest::class);
+    }
+
+    public function roleAssignments(): HasMany
+    {
+        return $this->hasMany(CommunityRoleAssignment::class);
+    }
+
+    public function roleHistories(): HasMany
+    {
+        return $this->hasMany(CommunityRoleHistory::class);
+    }
+
+    public function settings(): HasMany
+    {
+        return $this->hasMany(CommunitySetting::class);
+    }
+
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(CommunityAnnouncement::class);
+    }
+
+    public function isOwner(int $userId): bool
+    {
+        return $this->owner_id === $userId;
+    }
+
+    public function hasRole(int $userId, string $roleSlug): bool
+    {
+        return $this->roleAssignments()
+            ->where('user_id', $userId)
+            ->where('is_active', true)
+            ->whereHas('role', fn ($q) => $q->where('slug', $roleSlug))
+            ->exists();
+    }
+
+    public function isCommunityAdmin(int $userId): bool
+    {
+        return $this->isOwner($userId)
+            || $this->hasRole($userId, 'community-admin')
+            || $this->members()->where('user_id', $userId)->whereIn('role', ['admin', 'moderator'])->where('status', 'active')->exists();
+    }
+
+    public function isEventManager(int $userId): bool
+    {
+        return $this->isOwner($userId)
+            || $this->hasRole($userId, 'event-manager')
+            || $this->isCommunityAdmin($userId);
     }
 }

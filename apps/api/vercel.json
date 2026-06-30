@@ -1,0 +1,27 @@
+{
+  "builds": [
+    {
+      "src": "api/index.php",
+      "use": "vercel-php@0.6.4"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "api/index.php"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/index.php"
+    }
+  ],
+  "outputDirectory": null,
+  "installCommand": "composer install --no-dev --optimize-autoloader",
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false"
+  }
+}

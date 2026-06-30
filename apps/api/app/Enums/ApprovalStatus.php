@@ -6,19 +6,21 @@ namespace App\Enums;
 
 enum ApprovalStatus: string
 {
-    case PENDING = 'pending';
+    case DRAFT = 'draft';
+    case PENDING_REVIEW = 'pending_review';
     case APPROVED = 'approved';
     case REJECTED = 'rejected';
-    case REVISION = 'revision';
+    case REVISION_NEEDED = 'revision_needed';
     case ARCHIVED = 'archived';
 
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Pending',
+            self::DRAFT => 'Draft',
+            self::PENDING_REVIEW => 'Pending Review',
             self::APPROVED => 'Approved',
             self::REJECTED => 'Rejected',
-            self::REVISION => 'Revision Needed',
+            self::REVISION_NEEDED => 'Revision Needed',
             self::ARCHIVED => 'Archived',
         };
     }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface Article {
   id: number;
@@ -80,7 +81,7 @@ export default function ArticleDetailPage() {
             <span>{formatDate(article.published_at)}</span>
           </div>
           <div className="mt-8 prose prose-sm max-w-none text-foreground">
-            <div dangerouslySetInnerHTML={{ __html: article.content }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }} />
           </div>
         </article>
       </main>

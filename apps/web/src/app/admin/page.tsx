@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { fetchApi } from "@/lib/api";
 
 interface DashboardStats {
   total_users: number;
@@ -20,22 +20,15 @@ interface DashboardStats {
 }
 
 export default function AdminDashboardPage() {
-  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) { router.push("/login"); return; }
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => { if (!res.ok) throw new Error(); return res.json(); })
-      .then((data) => { if (data.success) setStats(data.data.stats); })
-      .catch(() => router.push("/login"))
+    fetchApi<{ stats: DashboardStats }>("/admin/dashboard")
+      .then((res) => setStats(res.data.stats))
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, [router]);
+  }, []);
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-blue border-t-transparent" /></div>;
 

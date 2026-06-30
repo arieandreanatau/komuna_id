@@ -20,7 +20,7 @@ class BrandController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $brand = Brand::with(['owner', 'organization', 'members.user'])->findOrFail($id);
-        return $this->successResponse($brand);
+        return $this->successResponse(new \App\Http\Resources\BrandResource($brand));
     }
 
     public function store(BrandStoreRequest $request): JsonResponse
@@ -76,11 +76,11 @@ class BrandController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        if ($brand->status !== ApprovalStatus::DRAFT && $brand->status !== ApprovalStatus::REVISION) {
+        if ($brand->status !== ApprovalStatus::DRAFT && $brand->status !== ApprovalStatus::REVISION_NEEDED) {
             return $this->errorResponse('Status tidak memungkinkan', 422);
         }
 
-        $brand->update(['status' => ApprovalStatus::PENDING]);
+        $brand->update(['status' => ApprovalStatus::PENDING_REVIEW]);
         AuditLogService::approvalAction('submitted_for_review', $brand, null, $request);
 
         return $this->successResponse($brand, 'Brand berhasil dikirim untuk review');
@@ -89,6 +89,11 @@ class BrandController extends Controller
     public function approve(Request $request, int $id): JsonResponse
     {
         $brand = Brand::findOrFail($id);
+
+        if ($brand->status !== ApprovalStatus::PENDING_REVIEW) {
+            return $this->errorResponse('Status brand tidak memungkinkan untuk disetujui', 422);
+        }
+
         $brand->update(['status' => ApprovalStatus::APPROVED]);
         AuditLogService::approvalAction('approved', $brand, $request->input('notes'), $request);
         return $this->successResponse($brand, 'Brand disetujui');
@@ -111,7 +116,7 @@ class BrandController extends Controller
         $validated = $request->validate(['notes' => 'required|string|max:1000']);
         $brand = Brand::findOrFail($id);
         $brand->update([
-            'status' => ApprovalStatus::REVISION,
+            'status' => ApprovalStatus::REVISION_NEEDED,
             'rejection_reason' => $validated['notes'],
         ]);
         AuditLogService::approvalAction('revision_requested', $brand, $validated['notes'], $request);
@@ -133,7 +138,7 @@ class BrandController extends Controller
     {
         $members = BrandMember::with('user')
             ->where('brand_id', $id)
-            ->paginate($request->get('per_page', 15));
+            ->paginate(min((int) $request->get('per_page', 15), 50));
         return $this->paginatedResponse($members);
     }
 }

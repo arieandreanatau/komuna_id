@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { fetchApi } from "@/lib/api";
 
 interface AuditLog {
   id: number;
@@ -14,21 +14,15 @@ interface AuditLog {
 }
 
 export default function AdminAuditLogsPage() {
-  const router = useRouter();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) { router.push("/login"); return; }
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/audit-logs?per_page=50`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => { if (data.success) setLogs(data.data || []); })
+    fetchApi<AuditLog[]>("/admin/audit-logs?per_page=50")
+      .then((res) => setLogs(res.data || []))
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, [router]);
+  }, []);
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-blue border-t-transparent" /></div>;
 

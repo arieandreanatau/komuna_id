@@ -20,7 +20,7 @@ class OrganizationController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $org = Organization::with(['owner', 'members.user', 'brands'])->findOrFail($id);
-        return $this->successResponse($org);
+        return $this->successResponse(new \App\Http\Resources\OrganizationResource($org));
     }
 
     public function store(OrganizationStoreRequest $request): JsonResponse
@@ -28,10 +28,19 @@ class OrganizationController extends Controller
         $validated = $request->validated();
 
         $org = Organization::create([
-            ...$validated,
+            'name' => $validated['name'],
             'slug' => Str::slug($validated['name']),
+            'type' => $validated['type'],
+            'description' => $validated['description'] ?? null,
+            'location' => $validated['location'] ?? null,
+            'pic_name' => $validated['pic_name'],
+            'email' => $validated['email'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'website' => $validated['website'] ?? null,
+            'instagram' => $validated['instagram'] ?? null,
+            'linkedin' => $validated['linkedin'] ?? null,
             'owner_id' => $request->user()->id,
-            'status' => ApprovalStatus::DRAFT,
+            'status' => ApprovalStatus::PENDING_REVIEW,
         ]);
 
         OrganizationMember::create([
@@ -43,7 +52,7 @@ class OrganizationController extends Controller
 
         AuditLogService::created($org, $request);
 
-        return $this->successResponse($org->load(['owner']), 'Organisasi berhasil dibuat', 201);
+        return $this->successResponse($org->load(['owner']), 'Organisasi berhasil dibuat dan dikirim untuk review', 201);
     }
 
     public function update(OrganizationUpdateRequest $request, int $id): JsonResponse
@@ -76,11 +85,11 @@ class OrganizationController extends Controller
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
-        if ($org->status !== ApprovalStatus::DRAFT && $org->status !== ApprovalStatus::REVISION) {
+        if ($org->status !== ApprovalStatus::DRAFT && $org->status !== ApprovalStatus::REVISION_NEEDED) {
             return $this->errorResponse('Status tidak memungkinkan', 422);
         }
 
-        $org->update(['status' => ApprovalStatus::PENDING]);
+        $org->update(['status' => ApprovalStatus::PENDING_REVIEW]);
         AuditLogService::approvalAction('submitted_for_review', $org, null, $request);
 
         return $this->successResponse($org, 'Berhasil dikirim untuk review');
@@ -89,6 +98,11 @@ class OrganizationController extends Controller
     public function approve(Request $request, int $id): JsonResponse
     {
         $org = Organization::findOrFail($id);
+
+        if ($org->status !== ApprovalStatus::PENDING_REVIEW) {
+            return $this->errorResponse('Status organisasi tidak memungkinkan untuk disetujui', 422);
+        }
+
         $org->update(['status' => ApprovalStatus::APPROVED]);
         AuditLogService::approvalAction('approved', $org, $request->input('notes'), $request);
         return $this->successResponse($org, 'Organisasi disetujui');
@@ -111,7 +125,7 @@ class OrganizationController extends Controller
         $validated = $request->validate(['notes' => 'required|string|max:1000']);
         $org = Organization::findOrFail($id);
         $org->update([
-            'status' => ApprovalStatus::REVISION,
+            'status' => ApprovalStatus::REVISION_NEEDED,
             'rejection_reason' => $validated['notes'],
         ]);
         AuditLogService::approvalAction('revision_requested', $org, $validated['notes'], $request);
@@ -133,7 +147,7 @@ class OrganizationController extends Controller
     {
         $members = OrganizationMember::with('user')
             ->where('organization_id', $id)
-            ->paginate($request->get('per_page', 15));
+            ->paginate(min((int) $request->get('per_page', 15), 50));
         return $this->paginatedResponse($members);
     }
 }

@@ -25,21 +25,44 @@ export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/events?per_page=12`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/events?per_page=12&page=1`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setEvents(data.data || []);
+        if (data.success) {
+          setEvents(data.data || []);
+          setHasMore(data.meta ? data.meta.current_page < data.meta.last_page : false);
+        }
       })
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = events.filter(
-    (e) =>
-      e.title.toLowerCase().includes(search.toLowerCase()) ||
-      e.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/events?per_page=12&page=${nextPage}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setEvents((prev) => [...prev, ...(data.data || [])]);
+          setPage(nextPage);
+          setHasMore(data.meta ? data.meta.current_page < data.meta.last_page : false);
+        }
+      })
+      .finally(() => setLoadingMore(false));
+  };
+
+  const filtered = search
+    ? events.filter(
+        (e) =>
+          e.title.toLowerCase().includes(search.toLowerCase()) ||
+          e.description.toLowerCase().includes(search.toLowerCase())
+      )
+    : events;
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("id-ID", {
@@ -84,45 +107,58 @@ export default function EventsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((event) => (
-                <Link
-                  key={event.id}
-                  href={`/events/${event.slug}`}
-                  className="group rounded-xl border border-border bg-white p-6 transition-shadow hover:shadow-md"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-blue/10 text-sm font-bold text-brand-blue">
-                      {new Date(event.start_date).getDate()}
+            <>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/events/${event.slug}`}
+                    className="group rounded-xl border border-border bg-white p-6 transition-shadow hover:shadow-md"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-blue/10 text-sm font-bold text-brand-blue">
+                        {new Date(event.start_date).getDate()}
+                      </div>
+                      {event.is_online && (
+                        <span className="rounded-full bg-brand-aqua/10 px-3 py-1 text-xs font-medium text-brand-aqua">
+                          Online
+                        </span>
+                      )}
                     </div>
-                    {event.is_online && (
-                      <span className="rounded-full bg-brand-aqua/10 px-3 py-1 text-xs font-medium text-brand-aqua">
-                        Online
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="mt-4 text-lg font-semibold text-brand-navy group-hover:text-brand-blue">
-                    {event.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {formatDate(event.start_date)}
-                  </p>
-                  {event.location && (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {event.location}
+                    <h3 className="mt-4 text-lg font-semibold text-brand-navy group-hover:text-brand-blue">
+                      {event.title}
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {formatDate(event.start_date)}
                     </p>
-                  )}
-                  <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{event.current_participants} peserta</span>
-                    <span className="font-semibold text-brand-teal">
-                      {event.ticket_price > 0
-                        ? `Rp ${event.ticket_price.toLocaleString("id-ID")}`
-                        : "Gratis"}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                    {event.location && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {event.location}
+                      </p>
+                    )}
+                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{event.current_participants} peserta</span>
+                      <span className="font-semibold text-brand-teal">
+                        {event.ticket_price > 0
+                          ? `Rp ${event.ticket_price.toLocaleString("id-ID")}`
+                          : "Gratis"}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {hasMore && !search && (
+                <div className="mt-8 flex justify-center">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="rounded-lg border border-border bg-white px-6 py-2.5 text-sm font-medium text-brand-navy hover:bg-muted disabled:opacity-50"
+                  >
+                    {loadingMore ? "Memuat..." : "Muat Lebih Banyak"}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </main>

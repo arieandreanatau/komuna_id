@@ -56,7 +56,7 @@ class CmsController extends Controller
             ->where('status', ArticleStatus::PUBLISHED)
             ->firstOrFail();
 
-        return $this->successResponse($article);
+        return $this->successResponse(new \App\Http\Resources\ArticleResource($article));
     }
 
     public function storeArticle(ArticleStoreRequest $request): JsonResponse

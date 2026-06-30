@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Role;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Role\RequestRoleRequest;
+use App\Models\Notification;
 use App\Models\RoleRequest;
 use App\Models\UserRole;
 use App\Services\AuditLogService;
@@ -32,6 +33,14 @@ class MeRoleController extends Controller
         ]);
 
         AuditLogService::created($roleRequest, $request);
+
+        Notification::create([
+            'user_id' => $request->user()->id,
+            'type' => 'role',
+            'title' => 'Pengajuan Role Terkirim',
+            'message' => 'Pengajuan role Anda telah dikirim dan menunggu review admin.',
+            'data' => ['role_request_id' => $roleRequest->id, 'role_id' => $roleRequest->role_id],
+        ]);
 
         return $this->successResponse($roleRequest, 'Permintaan role berhasil dibuat', 201);
     }

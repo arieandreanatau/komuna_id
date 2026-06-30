@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { fetchApi } from "@/lib/api";
 
 interface UserProfile {
   id: number;
@@ -10,6 +11,7 @@ interface UserProfile {
   status: string;
   profile: {
     bio: string | null;
+    avatar: string | null;
     phone: string | null;
     location: string | null;
     website: string | null;
@@ -17,7 +19,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const router = useRouter();
+  const { user: authUser, loading: authLoading } = useAuth();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -29,60 +31,37 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setUser(data.data);
-          setName(data.data.name);
-          setBio(data.data.profile?.bio || "");
-          setPhone(data.data.profile?.phone || "");
-          setLocation(data.data.profile?.location || "");
-          setWebsite(data.data.profile?.website || "");
-        }
+    if (!authUser) return;
+    fetchApi<UserProfile>("/auth/me")
+      .then((res) => {
+        setUser(res.data);
+        setName(res.data.name);
+        setBio(res.data.profile?.bio || "");
+        setPhone(res.data.profile?.phone || "");
+        setLocation(res.data.profile?.location || "");
+        setWebsite(res.data.profile?.website || "");
       })
       .finally(() => setLoading(false));
-  }, [router]);
+  }, [authUser]);
 
   const handleSave = async () => {
     setSaving(true);
     setMessage("");
 
-    const token = localStorage.getItem("auth_token");
-
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
+      await fetchApi("/auth/profile", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({ name, bio, phone, location, website }),
       });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setMessage("Profil berhasil diperbarui");
-      } else {
-        setMessage(data.message || "Gagal memperbarui profil");
-      }
+      setMessage("Profil berhasil diperbarui");
     } catch {
-      setMessage("Terjadi kesalahan");
+      setMessage("Gagal memperbarui profil");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-blue border-t-transparent" />
@@ -94,16 +73,31 @@ export default function ProfilePage() {
     <div className="max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-brand-navy">Profil Saya</h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola informasi profil Anda
-        </p>
+        <p className="text-sm text-muted-foreground">Kelola informasi profil Anda</p>
+      </div>
+
+      <div className="rounded-xl border border-border bg-white p-6">
+        <div className="flex items-center gap-4">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-navy text-2xl font-semibold text-white">
+            {user?.profile?.avatar ? (
+              <img src={user.profile.avatar} alt="Avatar" className="h-full w-full rounded-full object-cover" />
+            ) : (
+              name.charAt(0).toUpperCase()
+            )}
+          </div>
+          <div>
+            <p className="font-medium text-brand-navy">{user?.name}</p>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <button className="mt-2 text-sm text-brand-blue hover:underline">
+              Ubah Foto Profil
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="rounded-xl border border-border bg-white p-6 space-y-5">
         <div>
-          <label className="block text-sm font-medium text-brand-navy">
-            Nama
-          </label>
+          <label className="block text-sm font-medium text-brand-navy">Nama</label>
           <input
             type="text"
             value={name}
@@ -113,9 +107,7 @@ export default function ProfilePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-brand-navy">
-            Email
-          </label>
+          <label className="block text-sm font-medium text-brand-navy">Email</label>
           <input
             type="email"
             value={user?.email || ""}
@@ -125,9 +117,7 @@ export default function ProfilePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-brand-navy">
-            Bio
-          </label>
+          <label className="block text-sm font-medium text-brand-navy">Bio</label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
@@ -139,9 +129,7 @@ export default function ProfilePage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-brand-navy">
-              Telepon
-            </label>
+            <label className="block text-sm font-medium text-brand-navy">Telepon</label>
             <input
               type="text"
               value={phone}
@@ -152,9 +140,7 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-brand-navy">
-              Lokasi
-            </label>
+            <label className="block text-sm font-medium text-brand-navy">Lokasi</label>
             <input
               type="text"
               value={location}
@@ -166,9 +152,7 @@ export default function ProfilePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-brand-navy">
-            Website
-          </label>
+          <label className="block text-sm font-medium text-brand-navy">Website</label>
           <input
             type="url"
             value={website}

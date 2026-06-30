@@ -1,0 +1,71 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile
+    container_name: komuna-api
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./apps/api:/var/www/html
+    networks:
+      - komuna
+    depends_on:
+      - mysql
+      - redis
+  frontend:
+    build:
+      context: .
+      dockerfile: deployment/docker/frontend.Dockerfile
+    container_name: komuna-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost/api/v1
+    networks:
+      - komuna
+    depends_on:
+      - api
+  nginx:
+    image: nginx:alpine
+    container_name: komuna-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./deployment/docker/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./deployment/docker/nginx.frontend.conf:/etc/nginx/conf.d/frontend.conf
+    networks:
+      - komuna
+    depends_on:
+      - api
+      - frontend
+  mysql:
+    image: mysql:8.0
+    container_name: komuna-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: komuna
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_USER: komuna
+      MYSQL_PASSWORD: secret
+    volumes:
+      - komuna_mysql_data:/var/lib/mysql
+    networks:
+      - komuna
+  redis:
+    image: redis:7-alpine
+    container_name: komuna-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - komuna
+volumes:
+  komuna_mysql_data:
+networks:
+  komuna:
+    driver: bridge

@@ -21,6 +21,7 @@ class ProfileUpdateRequest extends FormRequest
             'phone' => 'sometimes|nullable|string|max:20',
             'location' => 'sometimes|nullable|string|max:255',
             'website' => 'sometimes|nullable|url|max:255',
+            'avatar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
     }
 

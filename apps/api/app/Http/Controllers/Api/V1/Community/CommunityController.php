@@ -12,10 +12,11 @@ use App\Models\Community;
 use App\Models\CommunityCategory;
 use App\Models\CommunityJoinRequest;
 use App\Models\CommunityMember;
+use App\Models\Notification;
 use App\Services\AuditLogService;
+use App\Services\EmailNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class CommunityController extends Controller
 {
@@ -38,7 +39,7 @@ class CommunityController extends Controller
         }
 
         $communities = $query->orderBy('member_count', 'desc')
-            ->paginate($request->get('per_page', 15));
+            ->paginate(min((int) $request->get('per_page', 15), 50));
 
         return $this->paginatedResponse($communities);
     }
@@ -50,63 +51,34 @@ class CommunityController extends Controller
             ->where('status', CommunityStatus::APPROVED)
             ->firstOrFail();
 
-        return $this->successResponse($community);
+        return $this->successResponse(new \App\Http\Resources\CommunityResource($community));
     }
 
     public function store(CommunityStoreRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        $action = new \App\Actions\CreateCommunityAction();
+        $community = $action->execute($request->validated(), $request);
 
-        $community = Community::create([
-            ...$validated,
-            'slug' => Str::slug($validated['name']),
-            'owner_id' => $request->user()->id,
-            'status' => CommunityStatus::DRAFT,
-            'member_count' => 1,
-        ]);
-
-        CommunityMember::create([
-            'community_id' => $community->id,
-            'user_id' => $request->user()->id,
-            'role' => 'admin',
-            'status' => 'active',
-            'joined_at' => now(),
-        ]);
-
-        AuditLogService::created($community, $request);
-
-        return $this->successResponse($community->load(['category', 'owner']), 'Komunitas berhasil dibuat', 201);
+        return $this->successResponse($community, 'Komunitas berhasil dibuat', 201);
     }
 
     public function update(CommunityUpdateRequest $request, int $id): JsonResponse
     {
         $community = Community::findOrFail($id);
 
-        if ($community->owner_id !== $request->user()->id) {
-            return $this->errorResponse('Tidak memiliki akses', 403);
-        }
+        $this->authorize('update', $community);
 
-        $validated = $request->validated();
+        $action = new \App\Actions\UpdateCommunityAction();
+        $community = $action->execute($request->validated(), $id, $request);
 
-        if (isset($validated['name'])) {
-            $validated['slug'] = Str::slug($validated['name']);
-        }
-
-        $oldValues = $community->only(array_keys($validated));
-        $community->update($validated);
-
-        AuditLogService::updated($community, $oldValues, $request);
-
-        return $this->successResponse($community->fresh(), 'Komunitas berhasil diperbarui');
+        return $this->successResponse($community, 'Komunitas berhasil diperbarui');
     }
 
     public function submitReview(Request $request, int $id): JsonResponse
     {
         $community = Community::findOrFail($id);
 
-        if ($community->owner_id !== $request->user()->id) {
-            return $this->errorResponse('Tidak memiliki akses', 403);
-        }
+        $this->authorize('update', $community);
 
         if ($community->status !== CommunityStatus::DRAFT && $community->status !== CommunityStatus::REVISION_NEEDED) {
             return $this->errorResponse('Status komunitas tidak memungkinkan', 422);
@@ -122,12 +94,8 @@ class CommunityController extends Controller
     {
         $community = Community::findOrFail($id);
 
-        if ($community->status !== CommunityStatus::PENDING_REVIEW) {
-            return $this->errorResponse('Status komunitas tidak memungkinkan', 422);
-        }
-
-        $community->update(['status' => CommunityStatus::APPROVED]);
-        AuditLogService::approvalAction('approved', $community, $request->input('notes'), $request);
+        $action = new \App\Actions\ApproveCommunityAction();
+        $community = $action->execute($id, $request->input('notes'), $request);
 
         return $this->successResponse($community, 'Komunitas berhasil disetujui');
     }
@@ -146,6 +114,8 @@ class CommunityController extends Controller
         ]);
 
         AuditLogService::approvalAction('rejected', $community, $validated['rejection_reason'], $request);
+
+        EmailNotificationService::sendCommunityRejected($community->owner, $community->name, $validated['rejection_reason'] ?? null);
 
         return $this->successResponse($community, 'Komunitas ditolak');
     }
@@ -172,9 +142,7 @@ class CommunityController extends Controller
     {
         $community = Community::findOrFail($id);
 
-        if ($community->owner_id !== $request->user()->id) {
-            return $this->errorResponse('Tidak memiliki akses', 403);
-        }
+        $this->authorize('update', $community);
 
         $community->update(['status' => CommunityStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $community, null, $request);
@@ -217,6 +185,14 @@ class CommunityController extends Controller
             'joined_at' => now(),
         ]);
 
+        Notification::create([
+            'user_id' => $community->owner_id,
+            'type' => 'community',
+            'title' => 'Anggota Baru',
+            'message' => $request->user()->name . ' telah bergabung ke komunitas ' . $community->name,
+            'data' => ['community_id' => $community->id, 'user_id' => $request->user()->id],
+        ]);
+
         $community->increment('member_count');
 
         AuditLogService::created($community, $request);
@@ -248,13 +224,20 @@ class CommunityController extends Controller
         $members = CommunityMember::with('user')
             ->where('community_id', $id)
             ->where('status', 'active')
-            ->paginate($request->get('per_page', 15));
+            ->paginate(min((int) $request->get('per_page', 15), 50));
 
         return $this->paginatedResponse($members);
     }
 
     public function approveMember(Request $request, int $communityId, int $userId): JsonResponse
     {
+        $isCommunityAdmin = CommunityMember::where('community_id', $communityId)->where('user_id', $request->user()->id)->whereIn('role', ['admin', 'moderator'])->where('status', 'active')->exists();
+        if (!$isCommunityAdmin && !$request->user()->isAdmin()) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
+
+        $community = Community::findOrFail($communityId);
+
         $joinRequest = CommunityJoinRequest::where('community_id', $communityId)
             ->where('user_id', $userId)
             ->where('status', 'pending')
@@ -283,6 +266,13 @@ class CommunityController extends Controller
 
     public function rejectMember(Request $request, int $communityId, int $userId): JsonResponse
     {
+        $isCommunityAdmin = CommunityMember::where('community_id', $communityId)->where('user_id', $request->user()->id)->whereIn('role', ['admin', 'moderator'])->where('status', 'active')->exists();
+        if (!$isCommunityAdmin && !$request->user()->isAdmin()) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
+
+        $community = Community::findOrFail($communityId);
+
         $joinRequest = CommunityJoinRequest::where('community_id', $communityId)
             ->where('user_id', $userId)
             ->where('status', 'pending')
@@ -301,6 +291,13 @@ class CommunityController extends Controller
 
     public function banMember(Request $request, int $communityId, int $userId): JsonResponse
     {
+        $isCommunityAdmin = CommunityMember::where('community_id', $communityId)->where('user_id', $request->user()->id)->whereIn('role', ['admin', 'moderator'])->where('status', 'active')->exists();
+        if (!$isCommunityAdmin && !$request->user()->isAdmin()) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
+
+        $community = Community::findOrFail($communityId);
+
         $member = CommunityMember::where('community_id', $communityId)
             ->where('user_id', $userId)
             ->firstOrFail();
@@ -318,5 +315,15 @@ class CommunityController extends Controller
     {
         $categories = CommunityCategory::where('is_active', true)->get();
         return $this->successResponse($categories);
+    }
+
+    public function myCommunities(Request $request): JsonResponse
+    {
+        $communities = Community::with(['category'])
+            ->where('owner_id', $request->user()->id)
+            ->orWhereHas('members', fn($q) => $q->where('user_id', $request->user()->id)->where('status', 'active'))
+            ->paginate(min((int) $request->get('per_page', 15), 50));
+
+        return $this->paginatedResponse($communities);
     }
 }

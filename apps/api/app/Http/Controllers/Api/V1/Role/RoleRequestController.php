@@ -6,9 +6,11 @@ namespace App\Http\Controllers\Api\V1\Role;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Role\ApproveRoleRequest;
+use App\Models\Notification;
 use App\Models\RoleRequest;
 use App\Models\UserRole;
 use App\Services\AuditLogService;
+use App\Services\EmailNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -31,6 +33,16 @@ class RoleRequestController extends Controller
             'is_active' => true,
         ]);
 
+        $roleRequest->load('role', 'user');
+        EmailNotificationService::sendRoleApproved($roleRequest->user, $roleRequest->role->name);
+        Notification::create([
+            'user_id' => $roleRequest->user_id,
+            'type' => 'role',
+            'title' => 'Role Disetujui',
+            'message' => 'Role ' . $roleRequest->role->name . ' Anda telah disetujui.',
+            'data' => ['role_request_id' => $roleRequest->id],
+        ]);
+
         AuditLogService::approvalAction('role_request_approved', $roleRequest, $request->validated('notes'), $request);
 
         return $this->successResponse($roleRequest, 'Permintaan role disetujui');
@@ -46,6 +58,16 @@ class RoleRequestController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        $roleRequest->load('role', 'user');
+        EmailNotificationService::sendRoleRejected($roleRequest->user, $roleRequest->role->name);
+        Notification::create([
+            'user_id' => $roleRequest->user_id,
+            'type' => 'role',
+            'title' => 'Role Ditolak',
+            'message' => 'Role ' . $roleRequest->role->name . ' Anda telah ditolak.',
+            'data' => ['role_request_id' => $roleRequest->id],
+        ]);
+
         AuditLogService::approvalAction('role_request_rejected', $roleRequest, null, $request);
 
         return $this->successResponse($roleRequest, 'Permintaan role ditolak');
@@ -59,6 +81,15 @@ class RoleRequestController extends Controller
             'status' => 'revision',
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
+        ]);
+
+        $roleRequest->load('role', 'user');
+        Notification::create([
+            'user_id' => $roleRequest->user_id,
+            'type' => 'role',
+            'title' => 'Role Perlu Revisi',
+            'message' => 'Role ' . $roleRequest->role->name . ' Anda perlu revisi.',
+            'data' => ['role_request_id' => $roleRequest->id],
         ]);
 
         AuditLogService::approvalAction('role_request_revision', $roleRequest, null, $request);

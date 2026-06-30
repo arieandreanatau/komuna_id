@@ -1,1 +1,1 @@
-export { BRAND, NAV_LINKS } from "./brand";
+export { BRAND, NAV_LINKS, COMMUNITY_CATEGORIES, FEATURE_LINKS } from "./brand";

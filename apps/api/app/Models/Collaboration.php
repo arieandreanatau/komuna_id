@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\CollaborationStatus;
+use Database\Factories\CollaborationFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,7 +14,12 @@ use Illuminate\Support\Str;
 
 class Collaboration extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+
+    protected static function newFactory(): CollaborationFactory
+    {
+        return CollaborationFactory::new();
+    }
 
     protected static function boot(): void
     {

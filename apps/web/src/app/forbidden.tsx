@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Forbidden() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-brand-light-gray px-4">
@@ -11,12 +13,12 @@ export default function Forbidden() {
         <p className="mt-2 text-sm text-muted-foreground">
           Anda tidak memiliki izin untuk mengakses halaman ini.
         </p>
-        <a
+        <Link
           href="/"
           className="mt-8 inline-flex rounded-lg bg-brand-blue px-6 py-3 text-sm font-semibold text-white hover:bg-brand-blue/90"
         >
           Kembali ke Beranda
-        </a>
+        </Link>
       </div>
     </div>
   );

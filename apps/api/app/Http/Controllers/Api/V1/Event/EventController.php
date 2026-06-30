@@ -10,7 +10,6 @@ use App\Http\Requests\Event\EventStoreRequest;
 use App\Http\Requests\Event\EventUpdateRequest;
 use App\Models\Event;
 use App\Models\EventRegistration;
-use App\Models\EventTicket;
 use App\Services\AuditLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,7 +39,7 @@ class EventController extends Controller
         }
 
         $events = $query->orderBy('start_date', 'asc')
-            ->paginate($request->get('per_page', 15));
+            ->paginate(min((int) $request->get('per_page', 15), 50));
 
         return $this->paginatedResponse($events);
     }
@@ -51,33 +50,22 @@ class EventController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return $this->successResponse($event);
+        return $this->successResponse(new \App\Http\Resources\EventResource($event));
     }
 
     public function store(EventStoreRequest $request, int $communityId): JsonResponse
     {
-        $validated = $request->validated();
+        $action = new \App\Actions\CreateEventAction();
+        $event = $action->execute($request->validated(), $communityId, $request);
 
-        $event = Event::create([
-            ...$validated,
-            'slug' => Str::slug($validated['title']),
-            'community_id' => $communityId,
-            'organizer_id' => $request->user()->id,
-            'status' => EventStatus::DRAFT,
-        ]);
-
-        AuditLogService::created($event, $request);
-
-        return $this->successResponse($event->load(['community', 'organizer']), 'Event berhasil dibuat', 201);
+        return $this->successResponse($event, 'Event berhasil dibuat', 201);
     }
 
     public function update(EventUpdateRequest $request, int $id): JsonResponse
     {
         $event = Event::findOrFail($id);
 
-        if ($event->organizer_id !== $request->user()->id) {
-            return $this->errorResponse('Tidak memiliki akses', 403);
-        }
+        $this->authorize('update', $event);
 
         $validated = $request->validated();
 
@@ -97,9 +85,7 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
-        if ($event->organizer_id !== $request->user()->id) {
-            return $this->errorResponse('Tidak memiliki akses', 403);
-        }
+        $this->authorize('publish', $event);
 
         if ($event->status !== EventStatus::DRAFT) {
             return $this->errorResponse('Hanya event draft yang bisa dipublikasikan', 422);
@@ -115,9 +101,7 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
-        if ($event->organizer_id !== $request->user()->id) {
-            return $this->errorResponse('Tidak memiliki akses', 403);
-        }
+        $this->authorize('update', $event);
 
         $event->update(['status' => EventStatus::CANCELLED]);
         AuditLogService::approvalAction('cancelled', $event, null, $request);
@@ -129,9 +113,7 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
-        if ($event->organizer_id !== $request->user()->id) {
-            return $this->errorResponse('Tidak memiliki akses', 403);
-        }
+        $this->authorize('update', $event);
 
         $event->update(['status' => EventStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $event, null, $request);
@@ -141,36 +123,8 @@ class EventController extends Controller
 
     public function register(Request $request, int $id): JsonResponse
     {
-        $event = Event::findOrFail($id);
-
-        if ($event->status !== EventStatus::PUBLISHED) {
-            return $this->errorResponse('Event tidak tersedia', 422);
-        }
-
-        if ($event->max_participants && $event->current_participants >= $event->max_participants) {
-            return $this->errorResponse('Event sudah penuh', 422);
-        }
-
-        $existing = EventRegistration::where('event_id', $id)
-            ->where('user_id', $request->user()->id)
-            ->first();
-
-        if ($existing && $existing->status !== 'cancelled') {
-            return $this->errorResponse('Sudah terdaftar di event ini', 422);
-        }
-
-        $registration = EventRegistration::updateOrCreate(
-            ['event_id' => $id, 'user_id' => $request->user()->id],
-            [
-                'status' => 'registered',
-                'qr_code' => Str::uuid(),
-                'registered_at' => now(),
-            ]
-        );
-
-        $event->increment('current_participants');
-
-        AuditLogService::created($registration, $request);
+        $action = new \App\Actions\RegisterEventAction();
+        $registration = $action->execute($id, $request);
 
         return $this->successResponse($registration, 'Berhasil terdaftar di event', 201);
     }
@@ -180,18 +134,54 @@ class EventController extends Controller
         $tickets = EventRegistration::with(['event', 'ticket'])
             ->where('user_id', $request->user()->id)
             ->orderBy('registered_at', 'desc')
-            ->paginate($request->get('per_page', 15));
+            ->paginate(min((int) $request->get('per_page', 15), 50));
 
         return $this->paginatedResponse($tickets);
+    }
+
+    public function myEvents(Request $request): JsonResponse
+    {
+        $events = Event::with(['community'])
+            ->where('organizer_id', $request->user()->id)
+            ->orWhereHas('registrations', fn($q) => $q->where('user_id', $request->user()->id)->where('status', '!=', 'cancelled'))
+            ->paginate(min((int) $request->get('per_page', 15), 50));
+        return $this->paginatedResponse($events);
+    }
+
+    public function ticket(Request $request, int $id): JsonResponse
+    {
+        $registration = EventRegistration::with(['event', 'ticket'])
+            ->where('event_id', $id)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+        return $this->successResponse(['registration' => $registration, 'qr_code' => $registration->qr_code]);
+    }
+
+    public function cancelRegistration(Request $request, int $id): JsonResponse
+    {
+        $registration = EventRegistration::where('event_id', $id)
+            ->where('user_id', $request->user()->id)
+            ->where('status', '!=', 'cancelled')
+            ->first();
+
+        if (! $registration) {
+            return $this->errorResponse('Pendaftaran tidak ditemukan', 404);
+        }
+
+        $registration->update(['status' => 'cancelled']);
+
+        Event::where('id', $id)->decrement('current_participants');
+
+        AuditLogService::approvalAction('cancelled_registration', $registration, null, $request);
+
+        return $this->successResponse(null, 'Pendaftaran event berhasil dibatalkan');
     }
 
     public function checkIn(Request $request, int $id): JsonResponse
     {
         $event = Event::findOrFail($id);
 
-        if ($event->organizer_id !== $request->user()->id) {
-            return $this->errorResponse('Tidak memiliki akses', 403);
-        }
+        $this->authorize('checkIn', $event);
 
         $validated = $request->validate([
             'qr_code' => 'required|string',
@@ -219,6 +209,10 @@ class EventController extends Controller
     public function report(Request $request, int $id): JsonResponse
     {
         $event = Event::findOrFail($id);
+
+        if ($event->organizer_id !== $request->user()->id && !$request->user()->isAdmin()) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
 
         $totalRegistered = EventRegistration::where('event_id', $id)
             ->where('status', '!=', 'cancelled')

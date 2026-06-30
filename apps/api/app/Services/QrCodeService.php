@@ -11,34 +11,42 @@ use Illuminate\Support\Facades\Storage;
 
 class QrCodeService
 {
-    public static function generate(string $data, int $size = 300): string
+    public static function generate(string $data, int $size = 300): ?string
     {
-        $qrCode = QrCode::create($data)
-            ->setSize($size)
-            ->setMargin(10);
+        try {
+            $qrCode = QrCode::create($data)
+                ->setSize($size)
+                ->setMargin(10);
 
-        $writer = new PngWriter();
-        $result = $writer->write($qrCode);
+            $writer = new PngWriter();
+            $result = $writer->write($qrCode);
 
-        $filename = 'qr/' . md5($data) . '_' . time() . '.png';
-        Storage::disk('public')->put($filename, $result->getString());
+            $filename = 'qr/' . md5($data) . '_' . time() . '.png';
+            Storage::disk('public')->put($filename, $result->getString());
 
-        return $filename;
+            return $filename;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
-    public static function generateDataUri(string $data, int $size = 300): string
+    public static function generateDataUri(string $data, int $size = 300): ?string
     {
-        $qrCode = QrCode::create($data)
-            ->setSize($size)
-            ->setMargin(10);
+        try {
+            $qrCode = QrCode::create($data)
+                ->setSize($size)
+                ->setMargin(10);
 
-        $writer = new PngWriter();
-        $result = $writer->write($qrCode);
+            $writer = new PngWriter();
+            $result = $writer->write($qrCode);
 
-        return 'data:image/png;base64,' . base64_encode($result->getString());
+            return 'data:image/png;base64,' . base64_encode($result->getString());
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
-    public static function generateForEvent(int $eventId, int $userId, string $qrCode): string
+    public static function generateForEvent(int $eventId, int $userId, string $qrCode): ?string
     {
         $data = json_encode([
             'event_id' => $eventId,

@@ -26,7 +26,7 @@ class CollaborationController extends Controller
         }
 
         $collabs = $query->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 15));
+            ->paginate(min((int) $request->get('per_page', 15), 50));
 
         return $this->paginatedResponse($collabs);
     }
@@ -34,7 +34,7 @@ class CollaborationController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $collab = Collaboration::with(['sender', 'receiver', 'deliverables'])->findOrFail($id);
-        return $this->successResponse($collab);
+        return $this->successResponse(new \App\Http\Resources\CollaborationResource($collab));
     }
 
     public function store(CollaborationStoreRequest $request): JsonResponse
@@ -139,6 +139,11 @@ class CollaborationController extends Controller
     public function archive(Request $request, int $id): JsonResponse
     {
         $collab = Collaboration::findOrFail($id);
+
+        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && !$request->user()->isAdmin()) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
+
         $collab->update(['status' => CollaborationStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $collab, null, $request);
         return $this->successResponse($collab, 'Kolaborasi diarsipkan');

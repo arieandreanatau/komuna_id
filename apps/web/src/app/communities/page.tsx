@@ -19,21 +19,44 @@ export default function CommunitiesPage() {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/communities?per_page=12`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/communities?per_page=12&page=1`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setCommunities(data.data || []);
+        if (data.success) {
+          setCommunities(data.data || []);
+          setHasMore(data.meta ? data.meta.current_page < data.meta.last_page : false);
+        }
       })
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = communities.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/communities?per_page=12&page=${nextPage}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setCommunities((prev) => [...prev, ...(data.data || [])]);
+          setPage(nextPage);
+          setHasMore(data.meta ? data.meta.current_page < data.meta.last_page : false);
+        }
+      })
+      .finally(() => setLoadingMore(false));
+  };
+
+  const filtered = search
+    ? communities.filter(
+        (c) =>
+          c.name.toLowerCase().includes(search.toLowerCase()) ||
+          c.description.toLowerCase().includes(search.toLowerCase())
+      )
+    : communities;
 
   return (
     <>
@@ -71,36 +94,49 @@ export default function CommunitiesPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((community) => (
-                <Link
-                  key={community.id}
-                  href={`/communities/${community.slug}`}
-                  className="group rounded-xl border border-border bg-white p-6 transition-shadow hover:shadow-md"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-teal/10 text-sm font-bold text-brand-teal">
-                      {community.name.charAt(0)}
+            <>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered.map((community) => (
+                  <Link
+                    key={community.id}
+                    href={`/communities/${community.slug}`}
+                    className="group rounded-xl border border-border bg-white p-6 transition-shadow hover:shadow-md"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-teal/10 text-sm font-bold text-brand-teal">
+                        {community.name.charAt(0)}
+                      </div>
+                      {community.category && (
+                        <span className="rounded-full bg-brand-light-gray px-3 py-1 text-xs font-medium text-muted-foreground">
+                          {community.category.name}
+                        </span>
+                      )}
                     </div>
-                    {community.category && (
-                      <span className="rounded-full bg-brand-light-gray px-3 py-1 text-xs font-medium text-muted-foreground">
-                        {community.category.name}
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="mt-4 text-lg font-semibold text-brand-navy group-hover:text-brand-blue">
-                    {community.name}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                    {community.description}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{community.member_count} anggota</span>
-                    <span>Oleh {community.owner.name}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                    <h3 className="mt-4 text-lg font-semibold text-brand-navy group-hover:text-brand-blue">
+                      {community.name}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                      {community.description}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{community.member_count} anggota</span>
+                      <span>Oleh {community.owner.name}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {hasMore && !search && (
+                <div className="mt-8 flex justify-center">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="rounded-lg border border-border bg-white px-6 py-2.5 text-sm font-medium text-brand-navy hover:bg-muted disabled:opacity-50"
+                  >
+                    {loadingMore ? "Memuat..." : "Muat Lebih Banyak"}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </main>

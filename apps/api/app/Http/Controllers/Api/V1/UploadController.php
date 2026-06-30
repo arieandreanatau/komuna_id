@@ -14,10 +14,10 @@ class UploadController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => 'required|file|max:10240',
+            'file' => 'required|file|max:10240|mimes:jpeg,jpg,png,gif,webp,svg,pdf,doc,docx,xls,xlsx,ppt,pptx,zip',
         ]);
 
-        $path = FileUploadService::uploadPublic($request->file('file'));
+        $path = FileUploadService::uploadPublic($request->file('file'), $request->user()->id . '/' . now()->format('Y-m'));
         $url = FileUploadService::getPublicUrl($path);
 
         return $this->successResponse([
@@ -32,7 +32,13 @@ class UploadController extends Controller
             'path' => 'required|string',
         ]);
 
-        $deleted = FileUploadService::delete($validated['path']);
+        $path = $validated['path'];
+
+        if (str_contains($path, '..') || !str_starts_with($path, (string) $request->user()->id . '/')) {
+            return $this->errorResponse('Tidak memiliki akses', 403);
+        }
+
+        $deleted = FileUploadService::delete($path);
 
         if (! $deleted) {
             return $this->errorResponse('File tidak ditemukan', 404);
