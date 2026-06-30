@@ -7,8 +7,6 @@ define('LARAVEL_START', microtime(true));
 require __DIR__ . '/../vendor/autoload.php';
 
 $tmpStorage = '/tmp/storage';
-$storageDir = __DIR__ . '/../storage';
-
 if (!is_dir($tmpStorage)) {
     @mkdir($tmpStorage, 0755, true);
     @mkdir($tmpStorage . '/framework/cache/data', 0755, true);
