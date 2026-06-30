@@ -39,7 +39,7 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            Role::create($role);
+            Role::firstOrCreate(['slug' => $role['slug']], $role);
         }
 
         $permissions = [
@@ -201,7 +201,7 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create($permission);
+            Permission::firstOrCreate(['slug' => $permission['slug']], $permission);
         }
 
         $this->assignPermissionsToRoles();
@@ -246,7 +246,7 @@ class RolePermissionSeeder extends Seeder
 
     private function assignOrganizationPermissions(): void
     {
-        $orgOwnerPerms = Permission::whereIn('group', 'organization')->pluck('id')->toArray();
+        $orgOwnerPerms = Permission::where('group', 'organization')->pluck('id')->toArray();
         $orgOwnerRole = Role::where('slug', 'org-owner')->first();
         if ($orgOwnerRole) {
             $orgOwnerRole->permissions()->sync($orgOwnerPerms);
@@ -289,7 +289,7 @@ class RolePermissionSeeder extends Seeder
 
     private function assignBrandPermissions(): void
     {
-        $brandOwnerPerms = Permission::whereIn('group', 'brand')->pluck('id')->toArray();
+        $brandOwnerPerms = Permission::where('group', 'brand')->pluck('id')->toArray();
         $brandOwnerRole = Role::where('slug', 'brand-owner')->first();
         if ($brandOwnerRole) {
             $brandOwnerRole->permissions()->sync($brandOwnerPerms);

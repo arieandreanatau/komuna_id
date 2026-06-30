@@ -41,16 +41,54 @@ export default function DashboardPage() {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 
+  const hasEmail = !!user?.email;
+  const hasAvatar = !!user?.profile?.avatar;
+  const hasPhoneNumber = !!user?.phone_number || !!user?.profile?.phone;
+
+  const completionItems = [
+    { label: "Tambahkan email", done: hasEmail, href: "/dashboard/profile" },
+    { label: "Verifikasi email", done: !!user?.email_verified_at, href: "/dashboard/profile" },
+    { label: "Tambahkan nomor WhatsApp", done: hasPhoneNumber, href: "/dashboard/profile" },
+    { label: "Tambahkan foto profil", done: hasAvatar, href: "/dashboard/profile" },
+  ];
+
+  const incompleteCount = completionItems.filter((item) => !item.done).length;
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-brand-navy">
-          Selamat datang, {user?.name}
+          Selamat datang di Komuna, {user?.full_name || user?.username}!
         </h1>
         <p className="text-sm text-muted-foreground">
-          Kelola komunitas, event, dan aktivitas Anda di KomunaID
+          Akunmu sudah aktif. Kamu bisa langsung mulai eksplor komunitas, event, dan fitur Komuna lainnya.
         </p>
       </div>
+
+      {incompleteCount > 0 && (
+        <div className="rounded-xl border border-brand-orange/30 bg-brand-orange/5 p-4">
+          <h3 className="text-sm font-semibold text-brand-navy">Lengkapi Akunmu</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Verifikasi email bersifat opsional, tetapi disarankan untuk keamanan akun dan pemulihan password.
+          </p>
+          <div className="mt-3 space-y-1.5">
+            {completionItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex items-center gap-2 text-sm ${
+                  item.done ? "text-green-600" : "text-muted-foreground hover:text-brand-blue"
+                }`}
+              >
+                <span className={item.done ? "text-green-500" : "text-gray-400"}>
+                  {item.done ? "✓" : "○"}
+                </span>
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
@@ -68,6 +106,34 @@ export default function DashboardPage() {
             <p className={`mt-2 text-3xl font-semibold ${stat.color}`}>{stat.value}</p>
           </Link>
         ))}
+      </div>
+
+      <div className="rounded-xl border border-border bg-white p-6">
+        <h2 className="text-lg font-semibold text-brand-navy">Aksi Cepat</h2>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {[
+            { label: "Eksplor Komunitas", href: "/communities", icon: "search", color: "bg-brand-blue" },
+            { label: "Cari Event", href: "/events", icon: "calendar", color: "bg-brand-teal" },
+            { label: "Buat Komunitas", href: "/communities/create", icon: "plus", color: "bg-brand-aqua" },
+            { label: "Daftarkan Organization", href: "/organization/create", icon: "building", color: "bg-brand-orange" },
+            { label: "Lengkapi Profil", href: "/dashboard/profile", icon: "user", color: "bg-brand-navy" },
+          ].map((action) => (
+            <Link
+              key={action.label}
+              href={action.href}
+              className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 text-center transition-colors hover:bg-muted/50"
+            >
+              <span className={`flex h-10 w-10 items-center justify-center rounded-full ${action.color} text-white text-sm`}>
+                {action.icon === "search" && "🔍"}
+                {action.icon === "calendar" && "📅"}
+                {action.icon === "plus" && "+"}
+                {action.icon === "building" && "🏢"}
+                {action.icon === "user" && "👤"}
+              </span>
+              <span className="text-sm font-medium text-brand-navy">{action.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {data?.pending_role_requests ? data.pending_role_requests > 0 : false ? (
@@ -144,32 +210,6 @@ export default function DashboardPage() {
         ) : (
           <p className="mt-4 text-sm text-muted-foreground">Belum ada notifikasi.</p>
         )}
-      </div>
-
-      <div className="rounded-xl border border-border bg-white p-6">
-        <h2 className="text-lg font-semibold text-brand-navy">Aksi Cepat</h2>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: "Cari Komunitas", href: "/communities", icon: "search" },
-            { label: "Lihat Event", href: "/events", icon: "calendar" },
-            { label: "Ajukan Role", href: "/role-requests", icon: "shield" },
-            { label: "Edit Profil", href: "/dashboard/profile", icon: "user" },
-          ].map((action) => (
-            <Link
-              key={action.label}
-              href={action.href}
-              className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 text-center transition-colors hover:bg-muted/50"
-            >
-              <span className="text-lg text-brand-blue">
-                {action.icon === "search" && "🔍"}
-                {action.icon === "calendar" && "📅"}
-                {action.icon === "shield" && "🛡️"}
-                {action.icon === "user" && "👤"}
-              </span>
-              <span className="text-sm font-medium text-brand-navy">{action.label}</span>
-            </Link>
-          ))}
-        </div>
       </div>
     </div>
   );

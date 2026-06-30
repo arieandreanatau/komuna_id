@@ -189,7 +189,7 @@ class CommunityController extends Controller
             'user_id' => $community->owner_id,
             'type' => 'community',
             'title' => 'Anggota Baru',
-            'message' => $request->user()->name . ' telah bergabung ke komunitas ' . $community->name,
+            'message' => ($request->user()->full_name ?? $request->user()->username) . ' telah bergabung ke komunitas ' . $community->name,
             'data' => ['community_id' => $community->id, 'user_id' => $request->user()->id],
         ]);
 

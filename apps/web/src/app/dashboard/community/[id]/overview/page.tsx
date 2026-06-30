@@ -8,7 +8,7 @@ import { fetchApi } from "@/lib/api";
 import type { CommunityDashboard } from "@/types/api";
 import { LoadingState } from "@/components/community/LoadingState";
 
-const STAT_ICONS = [
+const _STAT_ICONS = [
   { key: "total_members", label: "Total Anggota", color: "text-brand-blue", icon: Users },
   { key: "pending_join_requests", label: "Permintaan Join", color: "text-brand-orange", icon: UserPlus },
   { key: "active_events", label: "Event Aktif", color: "text-brand-teal", icon: Calendar },

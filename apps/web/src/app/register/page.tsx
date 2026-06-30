@@ -5,10 +5,12 @@ import { useState } from "react";
 import { BRAND } from "@/constants";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -26,12 +28,22 @@ export default function RegisterPage() {
     }
 
     try {
+      const body: Record<string, string> = {
+        username,
+        password,
+        password_confirmation: passwordConfirmation,
+      };
+
+      if (email) body.email = email;
+      if (phoneNumber) body.phone_number = phoneNumber;
+      if (fullName) body.full_name = fullName;
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password, password_confirmation: passwordConfirmation }),
+          body: JSON.stringify(body),
         }
       );
 
@@ -81,7 +93,7 @@ export default function RegisterPage() {
           </div>
 
           <h2 className="text-2xl font-semibold text-brand-navy">
-            Buat Akun Baru
+            Buat Akun Komuna
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Sudah punya akun?{" "}
@@ -105,37 +117,21 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
               <label
-                htmlFor="name"
+                htmlFor="username"
                 className="block text-sm font-medium text-brand-navy"
               >
-                Nama Lengkap
+                Username <span className="text-red-500">*</span>
               </label>
               <input
-                id="name"
+                id="username"
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
+                minLength={3}
+                maxLength={30}
                 className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
-                placeholder="Masukkan nama lengkap"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-brand-navy"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
-                placeholder="email@contoh.com"
+                placeholder="Pilih username unik"
               />
             </div>
 
@@ -144,7 +140,7 @@ export default function RegisterPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-brand-navy"
               >
-                Password
+                Password <span className="text-red-500">*</span>
               </label>
               <input
                 id="password"
@@ -163,7 +159,7 @@ export default function RegisterPage() {
                 htmlFor="password_confirmation"
                 className="block text-sm font-medium text-brand-navy"
               >
-                Konfirmasi Password
+                Konfirmasi Password <span className="text-red-500">*</span>
               </label>
               <input
                 id="password_confirmation"
@@ -177,6 +173,71 @@ export default function RegisterPage() {
               />
             </div>
 
+            <div className="border-t border-border pt-5">
+              <p className="mb-4 text-xs text-muted-foreground">
+                Field berikut bersifat opsional. Kamu bisa menambahkannya nanti dari halaman profil.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="fullName"
+                    className="block text-sm font-medium text-brand-navy"
+                  >
+                    Nama Lengkap
+                  </label>
+                  <input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
+                    placeholder="Nama lengkap kamu"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-brand-navy"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
+                    placeholder="email@contoh.com"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Opsional — bisa ditambahkan nanti
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="phoneNumber"
+                    className="block text-sm font-medium text-brand-navy"
+                  >
+                    Nomor WhatsApp
+                  </label>
+                  <input
+                    id="phoneNumber"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
+                    placeholder="08xxxxxxxxxx"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Opsional — bisa ditambahkan nanti
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
@@ -184,6 +245,10 @@ export default function RegisterPage() {
             >
               {isLoading ? "Memproses..." : "Daftar"}
             </button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              Setelah daftar, kamu bisa langsung masuk ke dashboard Komuna.
+            </p>
           </form>
         </div>
       </div>

@@ -30,7 +30,7 @@ class ResetPasswordNotification extends Notification
 
         return (new MailMessage)
             ->subject('Reset Password - KomunaID')
-            ->greeting("Halo {$this->user->name}!")
+            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
             ->line('Kami menerima permintaan untuk mereset password akun Anda.')
             ->line('Klik tombol di bawah ini untuk mereset password:')
             ->action('Reset Password', $resetUrl)

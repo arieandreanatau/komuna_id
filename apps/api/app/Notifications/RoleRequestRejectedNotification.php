@@ -29,7 +29,7 @@ class RoleRequestRejectedNotification extends Notification
     {
         $message = (new MailMessage)
             ->subject('Permintaan Role Ditolak - KomunaID')
-            ->greeting("Halo {$this->user->name}!")
+            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
             ->line("Permintaan role \"{$this->roleName}\" Anda telah ditolak.");
 
         if ($this->notes) {

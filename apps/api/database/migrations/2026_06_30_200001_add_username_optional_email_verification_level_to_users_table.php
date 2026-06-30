@@ -23,7 +23,9 @@ return new class extends Migration
             $table->dropColumn('name');
         });
 
-        DB::statement('ALTER TABLE users MODIFY COLUMN email VARCHAR(255) NULL');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE users MODIFY COLUMN email VARCHAR(255) NULL');
+        }
     }
 
     public function down(): void
@@ -38,6 +40,8 @@ return new class extends Migration
             $table->dropColumn(['username', 'full_name', 'phone_number', 'verification_level']);
         });
 
-        DB::statement('ALTER TABLE users MODIFY COLUMN email VARCHAR(255) NOT NULL');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE users MODIFY COLUMN email VARCHAR(255) NOT NULL');
+        }
     }
 };

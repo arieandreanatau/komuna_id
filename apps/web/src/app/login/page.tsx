@@ -5,7 +5,7 @@ import { useState } from "react";
 import { BRAND } from "@/constants";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -21,14 +21,14 @@ export default function LoginPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ login, password }),
         }
       );
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Email atau password salah");
+        setError(data.message || "Username/email atau password salah");
         return;
       }
 
@@ -78,19 +78,19 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
               <label
-                htmlFor="email"
+                htmlFor="login"
                 className="block text-sm font-medium text-brand-navy"
               >
-                Email
+                Username atau Email
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="login"
+                type="text"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
                 required
                 className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
-                placeholder="email@contoh.com"
+                placeholder="Masukkan username atau email"
               />
             </div>
 

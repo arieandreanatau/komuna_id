@@ -26,7 +26,7 @@ class WelcomeNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Selamat Datang di KomunaID!')
-            ->greeting("Halo {$this->user->name}!")
+            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
             ->line('Selamat datang di KomunaID, platform ekosistem komunitas.')
             ->line('Akun Anda telah berhasil dibuat dan siap digunakan.')
             ->line('Mulai jelajahi komunitas, event, dan berbagai peluang kolaborasi.')

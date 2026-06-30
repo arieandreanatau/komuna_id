@@ -28,6 +28,12 @@ return new class extends Migration
             if (!Schema::hasColumn('products', 'category_id')) {
                 $table->foreignId('category_id')->nullable()->after('organization_id')->constrained('product_categories')->nullOnDelete();
             }
+            if (!Schema::hasColumn('products', 'price')) {
+                $table->decimal('price', 12, 2)->nullable()->after('description');
+                $table->string('currency', 10)->default('IDR')->after('price');
+                $table->integer('stock')->default(0)->after('currency');
+                $table->string('status')->default('draft')->after('stock');
+            }
             if (!Schema::hasColumn('products', 'deleted_at')) {
                 $table->softDeletes();
             }
@@ -50,26 +56,31 @@ return new class extends Migration
     {
         Schema::dropIfExists('product_images');
         Schema::dropIfExists('product_categories');
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropForeign(['brand_id']);
-            $table->dropForeign(['organization_id']);
-            $table->dropForeign(['category_id']);
-            $table->dropColumn(['brand_id', 'organization_id', 'category_id', 'price', 'currency', 'stock', 'status']);
-            $table->dropSoftDeletes();
-        });
-    }
+
         Schema::table('products', function (Blueprint $table) {
             $columnsToDrop = [];
-            if (Schema::hasColumn('products', 'brand_id')) $columnsToDrop[] = 'brand_id';
-            if (Schema::hasColumn('products', 'organization_id')) $columnsToDrop[] = 'organization_id';
-            if (Schema::hasColumn('products', 'category_id')) $columnsToDrop[] = 'category_id';
-            if (!empty($columnsToDrop)) {
-                $table->dropForeign($columnsToDrop);
-                $table->dropColumn($columnsToDrop);
+            if (Schema::hasColumn('products', 'brand_id')) {
+                $table->dropForeign(['brand_id']);
+                $columnsToDrop[] = 'brand_id';
             }
+            if (Schema::hasColumn('products', 'organization_id')) {
+                $table->dropForeign(['organization_id']);
+                $columnsToDrop[] = 'organization_id';
+            }
+            if (Schema::hasColumn('products', 'category_id')) {
+                $table->dropForeign(['category_id']);
+                $columnsToDrop[] = 'category_id';
+            }
+            $columnsToDrop[] = 'price';
+            $columnsToDrop[] = 'currency';
+            $columnsToDrop[] = 'stock';
+            $columnsToDrop[] = 'status';
+
             if (Schema::hasColumn('products', 'deleted_at')) {
                 $table->dropSoftDeletes();
             }
+
+            $table->dropColumn($columnsToDrop);
         });
     }
 };

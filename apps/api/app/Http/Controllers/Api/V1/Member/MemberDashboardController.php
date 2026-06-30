@@ -65,10 +65,16 @@ class MemberDashboardController extends Controller
             'user' => [
                 'id' => $user->id,
                 'uuid' => $user->uuid,
-                'name' => $user->name,
+                'username' => $user->username,
+                'full_name' => $user->full_name,
+                'name' => $user->full_name ?? $user->username,
                 'email' => $user->email,
+                'phone_number' => $user->phone_number,
                 'status' => $user->status->value,
+                'verification_level' => $user->verification_level,
                 'email_verified_at' => $user->email_verified_at,
+                'phone_verified_at' => $user->phone_verified_at,
+                'identity_verified_at' => $user->identity_verified_at,
                 'profile' => $user->profile,
                 'roles' => $user->roles->map(fn ($ur) => [
                     'id' => $ur->role->id,

@@ -7,7 +7,7 @@ import Link from "next/link";
 import type { CommunityMember } from "@/types/api";
 
 export default function MyCommunitiesPage() {
-  const { user, loading: authLoading } = useAuth();
+  const {_user, loading: authLoading} = useAuth();
   const router = useRouter();
   const { data, loading, error } = useApi<{ data: CommunityMember[] }>("/me/communities");
 

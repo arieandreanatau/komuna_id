@@ -29,7 +29,7 @@ class CommunityRejectedNotification extends Notification
     {
         $message = (new MailMessage)
             ->subject('Komunitas Ditolak - KomunaID')
-            ->greeting("Halo {$this->user->name}!")
+            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
             ->line("Komunitas \"{$this->communityName}\" ditolak.");
 
         if ($this->reason) {

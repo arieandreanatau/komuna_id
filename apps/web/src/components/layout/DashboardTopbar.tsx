@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { BRAND } from "@/constants";
 import { getToken, removeToken, fetchApi } from "@/lib/api";
 import type { AuthUser } from "@/types/api";
-import { Bell, ChevronDown, Menu } from "lucide-react";
+import {Bell, ChevronDown} from "lucide-react";
 
 export function DashboardTopbar() {
   const [menuOpen, setMenuOpen] = useState(false);

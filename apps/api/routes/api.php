@@ -371,8 +371,17 @@ Route::prefix('v1')->group(function () {
             Route::post('/role-requests/{id}/reject', [RoleRequestController::class, 'reject']);
             Route::post('/role-requests/{id}/need-revision', [RoleRequestController::class, 'needRevision']);
             Route::get('/communities', [AdminController::class, 'communities']);
+            Route::post('/communities/{id}/approve', [CommunityController::class, 'approve']);
+            Route::post('/communities/{id}/reject', [CommunityController::class, 'reject']);
+            Route::post('/communities/{id}/need-revision', [CommunityController::class, 'needRevision']);
             Route::get('/organizations', [AdminController::class, 'organizations']);
+            Route::post('/organizations/{id}/approve', [OrganizationController::class, 'approve']);
+            Route::post('/organizations/{id}/reject', [OrganizationController::class, 'reject']);
+            Route::post('/organizations/{id}/need-revision', [OrganizationController::class, 'needRevision']);
             Route::get('/brands', [AdminController::class, 'brands']);
+            Route::post('/brands/{id}/approve', [BrandController::class, 'approve']);
+            Route::post('/brands/{id}/reject', [BrandController::class, 'reject']);
+            Route::post('/brands/{id}/need-revision', [BrandController::class, 'needRevision']);
             Route::get('/articles', [AdminController::class, 'articles']);
             Route::get('/events', [AdminController::class, 'events']);
             Route::get('/collaborations', [AdminController::class, 'collaborations']);

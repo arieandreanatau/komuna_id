@@ -5,7 +5,7 @@ import { useApi } from "@/hooks/useApi";
 import type { Report } from "@/types/api";
 
 export default function ReportsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const {_user, loading: authLoading} = useAuth();
   const { data, loading, error } = useApi<{ data: Report[] }>("/member/reports");
 
   if (authLoading || loading) {

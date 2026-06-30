@@ -11,10 +11,10 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         if ($driver === 'sqlite') {
-            DB::statement("ALTER TABLE invitations ALTER COLUMN status VARCHAR(255) DEFAULT 'pending'");
-        } else {
-            DB::statement("ALTER TABLE invitations MODIFY COLUMN status VARCHAR(255) DEFAULT 'pending'");
+            return;
         }
+
+        DB::statement("ALTER TABLE invitations MODIFY COLUMN status VARCHAR(255) DEFAULT 'pending'");
     }
 
     public function down(): void
@@ -22,9 +22,9 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         if ($driver === 'sqlite') {
-            DB::statement("ALTER TABLE invitations ALTER COLUMN status VARCHAR(255) DEFAULT 'pending'");
-        } else {
-            DB::statement("ALTER TABLE invitations MODIFY COLUMN status ENUM('pending','accepted','expired','cancelled') DEFAULT 'pending'");
+            return;
         }
+
+        DB::statement("ALTER TABLE invitations MODIFY COLUMN status ENUM('pending','accepted','expired','cancelled') DEFAULT 'pending'");
     }
 };

@@ -18,10 +18,16 @@ export interface PaginationMeta {
 export interface User {
   id: number;
   uuid: string;
+  username: string;
+  full_name: string | null;
   name: string;
-  email: string;
+  email: string | null;
+  phone_number: string | null;
   status: "pending" | "active" | "suspended" | "banned";
+  verification_level: number;
   email_verified_at: string | null;
+  phone_verified_at: string | null;
+  identity_verified_at: string | null;
   created_at: string;
   updated_at: string;
 }

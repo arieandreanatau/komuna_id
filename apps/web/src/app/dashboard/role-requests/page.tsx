@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import type { RoleRequest, Role } from "@/types/api";
 
 export default function RoleRequestsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const {_user, loading: authLoading} = useAuth();
   const { data, loading, error, execute } = useApi<{ data: RoleRequest[] }>("/me/role-requests");
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState("");

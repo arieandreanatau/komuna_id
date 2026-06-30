@@ -28,7 +28,7 @@ class CommunityApprovedNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Komunitas Disetujui - KomunaID')
-            ->greeting("Halo {$this->user->name}!")
+            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
             ->line("Komunitas \"{$this->communityName}\" telah disetujui.")
             ->line('Komunitas Anda sekarang sudah tampil di direktori publik.')
             ->action('Lihat Komunitas', config('app.frontend_url') . '/communities');

@@ -14,7 +14,7 @@ const MOCK_CART = [
 const formatPrice = (price: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(price);
 
 export default function CartPage() {
-  const [items, setItems] = useState(MOCK_CART);
+  const [items, _setItems] = useState(MOCK_CART);
   const [promoCode, setPromoCode] = useState("");
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);

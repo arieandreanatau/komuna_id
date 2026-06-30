@@ -50,7 +50,7 @@ const DOCUMENTS = [
 ];
 
 export default function OrganizationDashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [_activeTab, _setActiveTab] = useState("overview");
 
   return (
     <div className="space-y-6">

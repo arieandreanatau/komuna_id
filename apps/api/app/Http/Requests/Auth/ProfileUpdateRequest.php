@@ -16,7 +16,10 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string|max:255',
+            'username' => 'sometimes|string|min:3|max:30|alpha_dash|unique:users,username,' . $this->user()?->id,
+            'full_name' => 'sometimes|nullable|string|max:255',
+            'email' => 'sometimes|nullable|email|max:255|unique:users,email,' . $this->user()?->id,
+            'phone_number' => 'sometimes|nullable|string|max:20',
             'bio' => 'sometimes|nullable|string|max:1000',
             'phone' => 'sometimes|nullable|string|max:20',
             'location' => 'sometimes|nullable|string|max:255',
@@ -28,8 +31,14 @@ class ProfileUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.string' => 'Nama harus berupa teks.',
-            'name.max' => 'Nama maksimal 255 karakter.',
+            'username.min' => 'Username minimal 3 karakter.',
+            'username.max' => 'Username maksimal 30 karakter.',
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash, dan underscore.',
+            'username.unique' => 'Username sudah digunakan.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah digunakan.',
+            'full_name.string' => 'Nama harus berupa teks.',
+            'full_name.max' => 'Nama maksimal 255 karakter.',
             'bio.string' => 'Bio harus berupa teks.',
             'bio.max' => 'Bio maksimal 1000 karakter.',
             'phone.string' => 'Telepon harus berupa teks.',

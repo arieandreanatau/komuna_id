@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Headphones, Plus, Search, Filter, Clock, CheckCircle, AlertCircle, MessageSquare, ChevronRight } from "lucide-react";
+import {Headphones, Plus, Clock, CheckCircle, AlertCircle, ChevronRight} from "lucide-react";
 
 const MOCK_TICKETS = [
   { id: "TKT-001", subject: "Masalah Pembayaran Event", category: "Pembayaran", status: "open", priority: "high", date: "30 Jun 2026", lastReply: "2 jam lalu" },

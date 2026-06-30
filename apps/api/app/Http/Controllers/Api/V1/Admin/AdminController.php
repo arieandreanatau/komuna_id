@@ -202,4 +202,26 @@ class AdminController extends Controller
             'event_by_status' => $eventByStatus,
         ]);
     }
+
+    public function articles(Request $request): JsonResponse
+    {
+        $query = Article::with(['category', 'author']);
+
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
+            });
+        }
+
+        $articles = $query->orderBy('created_at', 'desc')
+            ->paginate($request->get('per_page', 15));
+
+        return $this->paginatedResponse($articles);
+    }
 }

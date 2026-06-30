@@ -6,7 +6,7 @@ import Link from "next/link";
 import type { EventRegistration } from "@/types/api";
 
 export default function MyTicketsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const {_user, loading: authLoading} = useAuth();
   const { data, loading, error } = useApi<{ data: EventRegistration[] }>("/me/tickets");
 
   if (authLoading || loading) {

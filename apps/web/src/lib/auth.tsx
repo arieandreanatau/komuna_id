@@ -13,7 +13,7 @@ import type { AuthUser } from "@/types/api";
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (login: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -46,12 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (loginValue: string, password: string) => {
     const res = await fetchApi<{ user: AuthUser; token: string }>(
       "/auth/login",
       {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ login: loginValue, password }),
       }
     );
     setToken(res.data.token);

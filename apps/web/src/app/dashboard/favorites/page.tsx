@@ -7,7 +7,7 @@ import Link from "next/link";
 import type { Favorite } from "@/types/api";
 
 export default function FavoritesPage() {
-  const { user, loading: authLoading } = useAuth();
+  const {_user, loading: authLoading} = useAuth();
   const { data, loading, error, execute } = useApi<{ data: Favorite[] }>("/member/favorites");
 
   const removeFavorite = async (id: number) => {

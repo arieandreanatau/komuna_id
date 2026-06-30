@@ -6,7 +6,7 @@ import { fetchApi } from "@/lib/api";
 import type { Notification } from "@/types/api";
 
 export default function NotificationsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const {_user, loading: authLoading} = useAuth();
   const { data, loading, error, execute } = useApi<{ data: Notification[] }>("/member/notifications");
 
   const markAsRead = async (id: number) => {

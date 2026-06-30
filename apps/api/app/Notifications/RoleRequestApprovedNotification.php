@@ -28,7 +28,7 @@ class RoleRequestApprovedNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Permintaan Role Disetujui - KomunaID')
-            ->greeting("Halo {$this->user->name}!")
+            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
             ->line("Permintaan role \"{$this->roleName}\" Anda telah disetujui.")
             ->line('Anda sekarang dapat mengakses fitur yang sesuai dengan role tersebut.')
             ->action('Buka Dashboard', config('app.frontend_url') . '/dashboard');
