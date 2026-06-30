@@ -1,19 +1,8 @@
 {
-  "framework": null,
-  "buildCommand": "composer install --no-dev --optimize-autoloader",
-  "outputDirectory": ".",
-  "installCommand": "npm install --ignore-scripts",
-  "functions": {
-    "api/*.php": {
-      "runtime": "vercel-php@0.9.0",
-      "memory": 2048,
-      "maxDuration": 30
-    }
-  },
+  "builds": [
+    { "src": "api/index.php", "use": "vercel-php@0.9.0" }
+  ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.php"
-    }
+    { "src": "/(.*)", "dest": "/api/index.php" }
   ]
 }
