@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Member;
 
 use App\Http\Controllers\Controller;
-use App\Models\ChatThread;
 use App\Models\ChatMessage;
+use App\Models\ChatThread;
 use App\Models\CommunityMember;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

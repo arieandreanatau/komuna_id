@@ -18,6 +18,13 @@ class VolunteerApplication extends Model
         return ['reviewed_at' => 'datetime'];
     }
 
-    public function opportunity(): BelongsTo { return $this->belongsTo(VolunteerOpportunity::class, 'opportunity_id'); }
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+    public function opportunity(): BelongsTo
+    {
+        return $this->belongsTo(VolunteerOpportunity::class, 'opportunity_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -5,8 +5,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import {
-  MapPin, Star, Users, Wifi, Car, Coffee, Calendar, Clock, ChevronLeft,
-  Check, Camera, Phone, Mail, MessageSquare, ThumbsUp, Quote, Building2
+  MapPin, Star, Users, Clock, ChevronLeft, Check, Camera, Phone, Mail, MessageSquare
 } from "lucide-react";
 
 const MOCK_VENUE = {

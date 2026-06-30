@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Event;
 
+use App\Actions\CreateEventAction;
+use App\Actions\RegisterEventAction;
 use App\Enums\EventStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\EventStoreRequest;
 use App\Http\Requests\Event\EventUpdateRequest;
+use App\Http\Resources\EventResource;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Services\AuditLogService;
@@ -30,7 +33,7 @@ class EventController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -50,12 +53,12 @@ class EventController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return $this->successResponse(new \App\Http\Resources\EventResource($event));
+        return $this->successResponse(new EventResource($event));
     }
 
     public function store(EventStoreRequest $request, int $communityId): JsonResponse
     {
-        $action = new \App\Actions\CreateEventAction();
+        $action = new CreateEventAction;
         $event = $action->execute($request->validated(), $communityId, $request);
 
         return $this->successResponse($event, 'Event berhasil dibuat', 201);
@@ -123,7 +126,7 @@ class EventController extends Controller
 
     public function register(Request $request, int $id): JsonResponse
     {
-        $action = new \App\Actions\RegisterEventAction();
+        $action = new RegisterEventAction;
         $registration = $action->execute($id, $request);
 
         return $this->successResponse($registration, 'Berhasil terdaftar di event', 201);
@@ -143,8 +146,9 @@ class EventController extends Controller
     {
         $events = Event::with(['community'])
             ->where('organizer_id', $request->user()->id)
-            ->orWhereHas('registrations', fn($q) => $q->where('user_id', $request->user()->id)->where('status', '!=', 'cancelled'))
+            ->orWhereHas('registrations', fn ($q) => $q->where('user_id', $request->user()->id)->where('status', '!=', 'cancelled'))
             ->paginate(min((int) $request->get('per_page', 15), 50));
+
         return $this->paginatedResponse($events);
     }
 
@@ -154,6 +158,7 @@ class EventController extends Controller
             ->where('event_id', $id)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
+
         return $this->successResponse(['registration' => $registration, 'qr_code' => $registration->qr_code]);
     }
 
@@ -210,7 +215,7 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
-        if ($event->organizer_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($event->organizer_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 

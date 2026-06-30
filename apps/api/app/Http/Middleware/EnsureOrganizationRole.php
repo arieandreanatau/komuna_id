@@ -16,7 +16,7 @@ class EnsureOrganizationRole
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated',
@@ -42,7 +42,7 @@ class EnsureOrganizationRole
 
         $organizationId = $request->route('organizationId') ?? $request->route('id');
 
-        if (!$organizationId) {
+        if (! $organizationId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Organization ID tidak ditemukan',
@@ -54,7 +54,7 @@ class EnsureOrganizationRole
 
         $organization = Organization::find($organizationId);
 
-        if (!$organization) {
+        if (! $organization) {
             return response()->json([
                 'success' => false,
                 'message' => 'Organisasi tidak ditemukan',

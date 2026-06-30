@@ -9,6 +9,7 @@ use App\Models\Community;
 use App\Models\CommunityMember;
 use App\Models\CommunityRoleAssignment;
 use App\Models\CommunityRoleHistory;
+use App\Models\Notification;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\AuditLogService;
@@ -60,7 +61,7 @@ class CommunityRoleController extends Controller
             ->where('status', 'active')
             ->exists();
 
-        if (!$isMember) {
+        if (! $isMember) {
             return $this->errorResponse('User harus menjadi anggota komunitas terlebih dahulu', 422);
         }
 
@@ -101,11 +102,11 @@ class CommunityRoleController extends Controller
         );
 
         $user = User::find($validated['user_id']);
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $validated['user_id'],
             'type' => 'community',
             'title' => 'Role Komunitas Baru',
-            'message' => 'Anda di-assign sebagai ' . $role->name . ' di komunitas ' . $community->name,
+            'message' => 'Anda di-assign sebagai '.$role->name.' di komunitas '.$community->name,
             'data' => ['community_id' => $communityId, 'role_slug' => $validated['role_slug']],
         ]);
 
@@ -127,7 +128,7 @@ class CommunityRoleController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
-        if (!$validated['is_active']) {
+        if (! $validated['is_active']) {
             $assignment->update([
                 'is_active' => false,
                 'deactivated_at' => now(),

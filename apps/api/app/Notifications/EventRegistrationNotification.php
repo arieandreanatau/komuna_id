@@ -16,8 +16,7 @@ class EventRegistrationNotification extends Notification
     public function __construct(
         private User $user,
         private string $eventTitle
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -28,9 +27,9 @@ class EventRegistrationNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Pendaftaran Event Berhasil - KomunaID')
-            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
+            ->greeting('Halo '.($this->user->full_name ?? $this->user->username).'!')
             ->line("Anda telah berhasil mendaftar untuk event \"{$this->eventTitle}\".")
             ->line('Simpan email ini sebagai bukti pendaftaran.')
-            ->action('Lihat Tiket Saya', config('app.frontend_url') . '/dashboard/my-tickets');
+            ->action('Lihat Tiket Saya', config('app.frontend_url').'/dashboard/my-tickets');
     }
 }

@@ -26,12 +26,14 @@ class ProductController extends Controller
         }
 
         $products = $query->latest()->paginate($request->get('per_page', 15));
+
         return $this->paginatedResponse($products);
     }
 
     public function show(int $id): JsonResponse
     {
         $product = Product::with(['seller', 'community'])->findOrFail($id);
+
         return $this->successResponse($product);
     }
 
@@ -72,10 +74,12 @@ class ProductController extends Controller
 
         if ($existing) {
             $existing->delete();
+
             return $this->successResponse(null, 'Dihapus dari wishlist');
         }
 
         Wishlist::create(['user_id' => $request->user()->id, 'product_id' => $id]);
+
         return $this->successResponse(null, 'Ditambahkan ke wishlist', 201);
     }
 

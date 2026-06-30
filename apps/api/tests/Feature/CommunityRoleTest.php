@@ -9,9 +9,10 @@ use App\Models\Community;
 use App\Models\CommunityCategory;
 use App\Models\CommunityMember;
 use App\Models\CommunityRoleAssignment;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CommunityRoleTest extends TestCase
@@ -19,10 +20,15 @@ class CommunityRoleTest extends TestCase
     use RefreshDatabase;
 
     private User $owner;
+
     private User $admin;
+
     private User $eventManager;
+
     private User $member;
+
     private User $stranger;
+
     private Community $community;
 
     protected function setUp(): void
@@ -38,7 +44,7 @@ class CommunityRoleTest extends TestCase
         $category = CommunityCategory::factory()->create();
 
         $this->community = Community::create([
-            'uuid' => \Illuminate\Support\Str::uuid(),
+            'uuid' => Str::uuid(),
             'name' => 'Test Community',
             'slug' => 'test-community',
             'description' => 'A test community',
@@ -319,7 +325,7 @@ class CommunityRoleTest extends TestCase
     public function test_scoped_role_prevents_cross_community_access(): void
     {
         $otherCommunity = Community::create([
-            'uuid' => \Illuminate\Support\Str::uuid(),
+            'uuid' => Str::uuid(),
             'name' => 'Other Community',
             'slug' => 'other-community',
             'description' => 'Another community',

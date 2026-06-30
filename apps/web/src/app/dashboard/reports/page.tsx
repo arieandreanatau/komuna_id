@@ -2,10 +2,12 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
-import type { Report } from "@/types/api";
+import type {
+  Report
+} from "@/types/api";
 
 export default function ReportsPage() {
-  const {_user, loading: authLoading} = useAuth();
+  const { loading: authLoading } = useAuth();
   const { data, loading, error } = useApi<{ data: Report[] }>("/member/reports");
 
   if (authLoading || loading) {

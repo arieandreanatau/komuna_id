@@ -22,7 +22,7 @@ class OrganizationRoleController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -38,7 +38,7 @@ class OrganizationRoleController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -50,7 +50,7 @@ class OrganizationRoleController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user) {
+        if (! $user) {
             return $this->errorResponse('User dengan email tersebut tidak ditemukan', 422);
         }
 
@@ -82,7 +82,7 @@ class OrganizationRoleController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -126,7 +126,7 @@ class OrganizationRoleController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -161,7 +161,7 @@ class OrganizationRoleController extends Controller
             'user_id' => $member->user_id,
             'type' => 'organization',
             'title' => 'Role Dicabut',
-            'message' => 'Role Anda sebagai ' . $oldRole . ' di organisasi ' . $org->name . ' telah dicabut',
+            'message' => 'Role Anda sebagai '.$oldRole.' di organisasi '.$org->name.' telah dicabut',
             'data' => ['organization_id' => $organizationId],
         ]);
 
@@ -172,7 +172,7 @@ class OrganizationRoleController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 

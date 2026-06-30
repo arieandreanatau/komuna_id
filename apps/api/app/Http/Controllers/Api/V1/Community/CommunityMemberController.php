@@ -32,7 +32,7 @@ class CommunityMemberController extends Controller
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -96,7 +96,7 @@ class CommunityMemberController extends Controller
             ->where('user_id', $joinRequest->user_id)
             ->first();
 
-        if (!$existingMember) {
+        if (! $existingMember) {
             CommunityMember::create([
                 'community_id' => $communityId,
                 'user_id' => $joinRequest->user_id,
@@ -114,7 +114,7 @@ class CommunityMemberController extends Controller
             'user_id' => $joinRequest->user_id,
             'type' => 'community',
             'title' => 'Permintaan Join Disetujui',
-            'message' => 'Permintaan Anda untuk bergabung ke komunitas ' . $community->name . ' telah disetujui',
+            'message' => 'Permintaan Anda untuk bergabung ke komunitas '.$community->name.' telah disetujui',
             'data' => ['community_id' => $communityId],
         ]);
 
@@ -144,7 +144,7 @@ class CommunityMemberController extends Controller
             'user_id' => $joinRequest->user_id,
             'type' => 'community',
             'title' => 'Permintaan Join Ditolak',
-            'message' => 'Permintaan Anda untuk bergabung ke komunitas ' . $community->name . ' telah ditolak',
+            'message' => 'Permintaan Anda untuk bergabung ke komunitas '.$community->name.' telah ditolak',
             'data' => ['community_id' => $communityId],
         ]);
 
@@ -167,7 +167,7 @@ class CommunityMemberController extends Controller
             return $this->errorResponse('Owner komunitas tidak bisa dihapus', 422);
         }
 
-        if ($member->role === 'admin' && !$request->user()->isCommunityOwner($communityId)) {
+        if ($member->role === 'admin' && ! $request->user()->isCommunityOwner($communityId)) {
             return $this->errorResponse('Hanya owner yang bisa menghapus admin', 422);
         }
 

@@ -3,8 +3,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { BRAND, COMMUNITY_CATEGORIES } from "@/constants";
 import {
-  Users, Calendar, ArrowRight, Search, MapPin, Star, ChevronRight,
-  Heart, Globe, Zap, Shield, TrendingUp, BookOpen, Sparkles, Handshake
+  Users, Calendar, ArrowRight, MapPin, Star, ChevronRight, Globe, Zap, Shield, TrendingUp, BookOpen, Sparkles, Handshake
 } from "lucide-react";
 
 const FEATURES = [

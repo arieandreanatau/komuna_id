@@ -6,12 +6,13 @@ import { useState, useEffect } from "react";
 import { BRAND } from "@/constants";
 import { getToken, removeToken, fetchApi } from "@/lib/api";
 import type { AuthUser } from "@/types/api";
-import {Bell, ChevronDown} from "lucide-react";
+import {
+  Bell, ChevronDown
+} from "lucide-react";
 
 export function DashboardTopbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = getToken();
@@ -82,7 +83,7 @@ export function DashboardTopbar() {
               <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-border bg-white py-1 shadow-lg">
                 <div className="px-4 py-3 border-b border-border">
                   <p className="text-sm font-semibold text-brand-navy">{user?.name || "Pengguna"}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email || ""}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email || user?.username || ""}</p>
                 </div>
                 <Link
                   href="/dashboard/profile"

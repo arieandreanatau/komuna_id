@@ -4,14 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import {CheckCircle, CreditCard, Wallet, ArrowRight, ChevronRight, Truck} from "lucide-react";
+import {
+  CheckCircle, CreditCard, Wallet, ArrowRight, ChevronRight, Truck
+} from "lucide-react";
 
 const formatPrice = (price: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(price);
 
 const STEPS = ["Keranjang", "Alamat", "Pembayaran", "Konfirmasi"];
 
 export default function CheckoutPage() {
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep] = useState(2);
 
   return (
     <>

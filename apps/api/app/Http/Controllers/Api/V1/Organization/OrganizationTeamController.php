@@ -17,7 +17,7 @@ class OrganizationTeamController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin', 'manager')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin', 'manager')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -32,7 +32,7 @@ class OrganizationTeamController extends Controller
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -46,7 +46,7 @@ class OrganizationTeamController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin', 'manager')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin', 'manager')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -62,7 +62,7 @@ class OrganizationTeamController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 

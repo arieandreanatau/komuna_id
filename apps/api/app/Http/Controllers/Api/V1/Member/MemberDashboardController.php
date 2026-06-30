@@ -36,7 +36,7 @@ class MemberDashboardController extends Controller
             ->count();
 
         $pendingRoleRequests = RoleRequest::where('user_id', $user->id)
-            ->whereIn('status', ['pending', 'revision'])
+            ->whereIn('status', ['submitted', 'under_review', 'need_revision'])
             ->count();
 
         $recentCommunities = CommunityMember::with('community')

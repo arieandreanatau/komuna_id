@@ -16,22 +16,22 @@ class BrandAuditLogController extends Controller
     {
         $brand = Brand::findOrFail($brandId);
 
-        if ($brand->owner_id !== $request->user()->id && !$brand->hasMemberRole($request->user()->id, 'admin')) {
+        if ($brand->owner_id !== $request->user()->id && ! $brand->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $query = AuditLog::with('user:id,name,email')
             ->where(function ($q) use ($brandId) {
                 $q->where('auditable_type', 'App\\Models\\Brand')
-                  ->where('auditable_id', $brandId)
-                  ->orWhere(function ($q2) use ($brandId) {
-                      $q2->where('auditable_type', 'App\\Models\\BrandMember')
-                         ->where('new_values->brand_id', $brandId);
-                  })
-                  ->orWhere(function ($q2) use ($brandId) {
-                      $q2->where('auditable_type', 'App\\Models\\Campaign')
-                         ->where('new_values->brand_id', $brandId);
-                  });
+                    ->where('auditable_id', $brandId)
+                    ->orWhere(function ($q2) use ($brandId) {
+                        $q2->where('auditable_type', 'App\\Models\\BrandMember')
+                            ->where('new_values->brand_id', $brandId);
+                    })
+                    ->orWhere(function ($q2) use ($brandId) {
+                        $q2->where('auditable_type', 'App\\Models\\Campaign')
+                            ->where('new_values->brand_id', $brandId);
+                    });
             });
 
         if ($request->has('action')) {

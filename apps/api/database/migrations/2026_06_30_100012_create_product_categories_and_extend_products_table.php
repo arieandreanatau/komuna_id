@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('product_categories')) {
+        if (! Schema::hasTable('product_categories')) {
             Schema::create('product_categories', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -19,27 +19,27 @@ return new class extends Migration
         }
 
         Schema::table('products', function (Blueprint $table) {
-            if (!Schema::hasColumn('products', 'brand_id')) {
+            if (! Schema::hasColumn('products', 'brand_id')) {
                 $table->foreignId('brand_id')->nullable()->after('id')->constrained()->nullOnDelete();
             }
-            if (!Schema::hasColumn('products', 'organization_id')) {
+            if (! Schema::hasColumn('products', 'organization_id')) {
                 $table->foreignId('organization_id')->nullable()->after('brand_id')->constrained()->nullOnDelete();
             }
-            if (!Schema::hasColumn('products', 'category_id')) {
+            if (! Schema::hasColumn('products', 'category_id')) {
                 $table->foreignId('category_id')->nullable()->after('organization_id')->constrained('product_categories')->nullOnDelete();
             }
-            if (!Schema::hasColumn('products', 'price')) {
+            if (! Schema::hasColumn('products', 'price')) {
                 $table->decimal('price', 12, 2)->nullable()->after('description');
                 $table->string('currency', 10)->default('IDR')->after('price');
                 $table->integer('stock')->default(0)->after('currency');
                 $table->string('status')->default('draft')->after('stock');
             }
-            if (!Schema::hasColumn('products', 'deleted_at')) {
+            if (! Schema::hasColumn('products', 'deleted_at')) {
                 $table->softDeletes();
             }
         });
 
-        if (!Schema::hasTable('product_images')) {
+        if (! Schema::hasTable('product_images')) {
             Schema::create('product_images', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('product_id')->constrained()->cascadeOnDelete();

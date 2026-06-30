@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import {
-  AlertTriangle, Eye, Shield, X, Check, Clock, Filter, MessageSquare,
-  FileText, Image, MoreVertical, AlertCircle, ChevronRight, Flag, ArrowRight
+  Eye, Shield, X, Check, Clock, Filter, MessageSquare, FileText, AlertCircle, Flag
 } from "lucide-react";
 
 const MOCK_REPORTS = [

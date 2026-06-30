@@ -5,8 +5,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import {
-  Search, Filter, ShoppingBag, Star, MapPin, Heart, ShoppingCart,
-  ChevronDown, Grid, List, Tag, TrendingUp, Package
+  Search, Filter, Star, MapPin, Heart, Grid, List
 } from "lucide-react";
 
 const CATEGORIES = [

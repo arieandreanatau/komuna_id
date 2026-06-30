@@ -16,7 +16,7 @@ class BrandNotificationController extends Controller
     {
         $brand = Brand::findOrFail($brandId);
 
-        if ($brand->owner_id !== $request->user()->id && !$brand->hasMemberRole($request->user()->id, 'admin', 'manager')) {
+        if ($brand->owner_id !== $request->user()->id && ! $brand->hasMemberRole($request->user()->id, 'admin', 'manager')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 

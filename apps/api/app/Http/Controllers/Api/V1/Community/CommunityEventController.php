@@ -23,7 +23,7 @@ class CommunityEventController extends Controller
         $query = Event::with(['organizer:id,name'])
             ->where('community_id', $communityId);
 
-        if (!$request->user()->canManageCommunityEvents($communityId)) {
+        if (! $request->user()->canManageCommunityEvents($communityId)) {
             $query->where('status', EventStatus::PUBLISHED);
         }
 
@@ -35,7 +35,7 @@ class CommunityEventController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -244,7 +244,7 @@ class CommunityEventController extends Controller
                 ->first();
         }
 
-        if (!$registration) {
+        if (! $registration) {
             return $this->errorResponse('Peserta tidak ditemukan atau sudah check-in', 422);
         }
 

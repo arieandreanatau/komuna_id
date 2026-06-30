@@ -6,9 +6,6 @@ namespace App\Http\Controllers\Api\V1\Community;
 
 use App\Http\Controllers\Controller;
 use App\Models\Community;
-use App\Models\CommunityMember;
-use App\Models\CommunityRoleAssignment;
-use App\Models\Event;
 use App\Models\EventRegistration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

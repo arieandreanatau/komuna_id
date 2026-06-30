@@ -3,10 +3,12 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { fetchApi } from "@/lib/api";
-import type { Notification } from "@/types/api";
+import type {
+  Notification
+} from "@/types/api";
 
 export default function NotificationsPage() {
-  const {_user, loading: authLoading} = useAuth();
+  const { loading: authLoading } = useAuth();
   const { data, loading, error, execute } = useApi<{ data: Notification[] }>("/member/notifications");
 
   const markAsRead = async (id: number) => {

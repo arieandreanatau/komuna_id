@@ -59,7 +59,7 @@ class CommunityNotificationController extends Controller
             ->where('community_id', $communityId)
             ->where('status', 'published');
 
-        if (!$request->user()->canManageCommunity($communityId)) {
+        if (! $request->user()->canManageCommunity($communityId)) {
             $query->latest('is_pinned');
         } else {
             $query->latest('published_at');
@@ -102,7 +102,7 @@ class CommunityNotificationController extends Controller
                 'user_id' => $memberId,
                 'type' => 'community',
                 'title' => 'Pengumuman Baru',
-                'message' => 'Pengumuman baru di komunitas ' . $community->name . ': ' . $validated['title'],
+                'message' => 'Pengumuman baru di komunitas '.$community->name.': '.$validated['title'],
                 'data' => ['community_id' => $communityId, 'announcement_id' => $announcement->id],
             ]);
         }

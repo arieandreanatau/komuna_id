@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Enums\ApprovalStatus;
 use App\Models\Brand;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -54,7 +55,7 @@ class BrandTest extends TestCase
     public function test_brand_can_be_approved_by_admin(): void
     {
         $admin = User::factory()->create();
-        $admin->roles()->create(['role_id' => \App\Models\Role::firstOrCreate(['name' => 'Super Admin', 'slug' => 'super-admin', 'scope' => 'platform'])->id, 'is_active' => true]);
+        $admin->roles()->create(['role_id' => Role::firstOrCreate(['name' => 'Super Admin', 'slug' => 'super-admin', 'scope' => 'platform'])->id, 'is_active' => true]);
         $brand = Brand::factory()->create(['status' => ApprovalStatus::PENDING_REVIEW]);
 
         $response = $this->actingAs($admin)->postJson("/api/v1/brands/{$brand->id}/approve");

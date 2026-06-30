@@ -16,7 +16,7 @@ class EnsureCommunityRole
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated',
@@ -42,7 +42,7 @@ class EnsureCommunityRole
 
         $communityId = $request->route('communityId') ?? $request->route('id');
 
-        if (!$communityId) {
+        if (! $communityId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Community ID tidak ditemukan',
@@ -54,7 +54,7 @@ class EnsureCommunityRole
 
         $community = Community::find($communityId);
 
-        if (!$community) {
+        if (! $community) {
             return response()->json([
                 'success' => false,
                 'message' => 'Komunitas tidak ditemukan',

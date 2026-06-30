@@ -12,6 +12,7 @@ class FileUploadService
     public static function validateMime(UploadedFile $file, array $allowedMimes): bool
     {
         $extension = strtolower($file->getClientOriginalExtension());
+
         return in_array($extension, $allowedMimes);
     }
 
@@ -35,6 +36,7 @@ class FileUploadService
         if (Storage::disk($disk)->exists($path)) {
             return Storage::disk($disk)->delete($path);
         }
+
         return false;
     }
 
@@ -52,12 +54,14 @@ class FileUploadService
     {
         $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename);
         $filename = preg_replace('/_+/', '_', $filename);
+
         return $filename;
     }
 
     public static function generateUniqueFilename(UploadedFile $file): string
     {
         $extension = $file->getClientOriginalExtension();
-        return uniqid() . '_' . time() . '.' . $extension;
+
+        return uniqid().'_'.time().'.'.$extension;
     }
 }

@@ -25,7 +25,18 @@ class VolunteerOpportunity extends Model
         ];
     }
 
-    public function community(): BelongsTo { return $this->belongsTo(Community::class); }
-    public function organizer(): BelongsTo { return $this->belongsTo(User::class, 'organizer_id'); }
-    public function applications(): HasMany { return $this->hasMany(VolunteerApplication::class, 'opportunity_id'); }
+    public function community(): BelongsTo
+    {
+        return $this->belongsTo(Community::class);
+    }
+
+    public function organizer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'organizer_id');
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(VolunteerApplication::class, 'opportunity_id');
+    }
 }

@@ -29,7 +29,7 @@ class MeRoleController extends Controller
         $roleRequest = RoleRequest::create([
             'user_id' => $request->user()->id,
             'role_id' => $request->validated('role_id'),
-            'status' => 'pending',
+            'status' => 'submitted',
         ]);
 
         AuditLogService::created($roleRequest, $request);

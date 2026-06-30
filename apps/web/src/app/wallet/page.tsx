@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import {
-  Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, Receipt, TrendingUp,
-  Plus, Download, Eye, Filter, ChevronDown, Calendar, DollarSign, BarChart3
+  ArrowUpRight, ArrowDownLeft, Receipt, TrendingUp, Plus, Download, DollarSign
 } from "lucide-react";
 
 const MOCK_WALLET = {

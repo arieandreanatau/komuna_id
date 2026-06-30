@@ -8,6 +8,7 @@ use App\Enums\ApprovalStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Organization\OrganizationStoreRequest;
 use App\Http\Requests\Organization\OrganizationUpdateRequest;
+use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
 use App\Services\AuditLogService;
@@ -20,7 +21,8 @@ class OrganizationController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $org = Organization::with(['owner', 'members.user', 'brands'])->findOrFail($id);
-        return $this->successResponse(new \App\Http\Resources\OrganizationResource($org));
+
+        return $this->successResponse(new OrganizationResource($org));
     }
 
     public function store(OrganizationStoreRequest $request): JsonResponse
@@ -105,6 +107,7 @@ class OrganizationController extends Controller
 
         $org->update(['status' => ApprovalStatus::APPROVED]);
         AuditLogService::approvalAction('approved', $org, $request->input('notes'), $request);
+
         return $this->successResponse($org, 'Organisasi disetujui');
     }
 
@@ -117,6 +120,7 @@ class OrganizationController extends Controller
             'rejection_reason' => $validated['rejection_reason'],
         ]);
         AuditLogService::approvalAction('rejected', $org, $validated['rejection_reason'], $request);
+
         return $this->successResponse($org, 'Organisasi ditolak');
     }
 
@@ -129,6 +133,7 @@ class OrganizationController extends Controller
             'rejection_reason' => $validated['notes'],
         ]);
         AuditLogService::approvalAction('revision_requested', $org, $validated['notes'], $request);
+
         return $this->successResponse($org, 'Revisi diminta');
     }
 
@@ -140,6 +145,7 @@ class OrganizationController extends Controller
         }
         $org->update(['status' => ApprovalStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $org, null, $request);
+
         return $this->successResponse($org, 'Organisasi diarsipkan');
     }
 
@@ -148,6 +154,7 @@ class OrganizationController extends Controller
         $members = OrganizationMember::with('user')
             ->where('organization_id', $id)
             ->paginate(min((int) $request->get('per_page', 15), 50));
+
         return $this->paginatedResponse($members);
     }
 }

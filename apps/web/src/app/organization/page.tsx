@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
-  Building, Users, FileText, Calendar, Handshake, BarChart3, Settings,
-  Plus, ChevronRight, TrendingUp, Globe, Mail, Phone, MapPin, ExternalLink,
-  Upload, Download, Eye, Edit, Trash2, CheckCircle, Clock, AlertCircle
+  Building, Users, FileText, Calendar, Settings, TrendingUp, Globe, Mail, Phone, MapPin, Download
 } from "lucide-react";
 
 const MOCK_ORG = {
@@ -50,8 +47,6 @@ const DOCUMENTS = [
 ];
 
 export default function OrganizationDashboard() {
-  const [_activeTab, _setActiveTab] = useState("overview");
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

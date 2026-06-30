@@ -4,10 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
-import type { Favorite } from "@/types/api";
+import type {
+  Favorite
+} from "@/types/api";
 
 export default function FavoritesPage() {
-  const {_user, loading: authLoading} = useAuth();
+  const { loading: authLoading } = useAuth();
   const { data, loading, error, execute } = useApi<{ data: Favorite[] }>("/member/favorites");
 
   const removeFavorite = async (id: number) => {

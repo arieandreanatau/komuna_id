@@ -8,6 +8,7 @@ use App\Enums\ArticleStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cms\ArticleStoreRequest;
 use App\Http\Requests\Cms\ArticleUpdateRequest;
+use App\Http\Resources\ArticleResource;
 use App\Models\Article;
 use App\Models\ArticleCategory;
 use App\Models\Faq;
@@ -39,7 +40,7 @@ class CmsController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                    ->orWhere('content', 'like', "%{$search}%");
             });
         }
 
@@ -56,7 +57,7 @@ class CmsController extends Controller
             ->where('status', ArticleStatus::PUBLISHED)
             ->firstOrFail();
 
-        return $this->successResponse(new \App\Http\Resources\ArticleResource($article));
+        return $this->successResponse(new ArticleResource($article));
     }
 
     public function storeArticle(ArticleStoreRequest $request): JsonResponse
@@ -79,7 +80,7 @@ class CmsController extends Controller
     {
         $article = Article::findOrFail($id);
 
-        if ($article->author_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($article->author_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -102,6 +103,7 @@ class CmsController extends Controller
         $article = Article::findOrFail($id);
         $article->update(['status' => ArticleStatus::PENDING_REVIEW]);
         AuditLogService::approvalAction('submitted_for_review', $article, null, $request);
+
         return $this->successResponse($article, 'Artikel dikirim untuk review');
     }
 
@@ -109,7 +111,7 @@ class CmsController extends Controller
     {
         $article = Article::findOrFail($id);
 
-        if ($article->author_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($article->author_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -118,6 +120,7 @@ class CmsController extends Controller
             'published_at' => now(),
         ]);
         AuditLogService::approvalAction('published', $article, null, $request);
+
         return $this->successResponse($article, 'Artikel dipublikasikan');
     }
 
@@ -125,12 +128,13 @@ class CmsController extends Controller
     {
         $article = Article::findOrFail($id);
 
-        if ($article->author_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($article->author_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $article->update(['status' => ArticleStatus::UNPUBLISHED]);
         AuditLogService::approvalAction('unpublished', $article, null, $request);
+
         return $this->successResponse($article, 'Artikel tidak dipublikasikan');
     }
 
@@ -138,12 +142,13 @@ class CmsController extends Controller
     {
         $article = Article::findOrFail($id);
 
-        if ($article->author_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($article->author_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $article->update(['status' => ArticleStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $article, null, $request);
+
         return $this->successResponse($article, 'Artikel diarsipkan');
     }
 
@@ -174,6 +179,7 @@ class CmsController extends Controller
     public function articleCategories(): JsonResponse
     {
         $categories = ArticleCategory::where('is_active', true)->get();
+
         return $this->successResponse($categories);
     }
 }

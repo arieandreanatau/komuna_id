@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
-use App\Notifications\WelcomeNotification;
-use App\Notifications\ResetPasswordNotification;
-use App\Notifications\RoleRequestApprovedNotification;
-use App\Notifications\RoleRequestRejectedNotification;
-use App\Notifications\InvitationNotification;
 use App\Notifications\CommunityApprovedNotification;
 use App\Notifications\CommunityRejectedNotification;
 use App\Notifications\EventRegistrationNotification;
+use App\Notifications\InvitationNotification;
+use App\Notifications\ResetPasswordNotification;
+use App\Notifications\RoleRequestApprovedNotification;
+use App\Notifications\RoleRequestRejectedNotification;
+use App\Notifications\WelcomeNotification;
 
 class EmailNotificationService
 {

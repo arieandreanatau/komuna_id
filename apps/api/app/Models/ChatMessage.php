@@ -16,6 +16,13 @@ class ChatMessage extends Model
         return ['read_at' => 'datetime'];
     }
 
-    public function thread(): BelongsTo { return $this->belongsTo(ChatThread::class, 'thread_id'); }
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+    public function thread(): BelongsTo
+    {
+        return $this->belongsTo(ChatThread::class, 'thread_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

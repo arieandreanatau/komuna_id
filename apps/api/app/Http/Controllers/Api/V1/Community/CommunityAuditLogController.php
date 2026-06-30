@@ -21,15 +21,15 @@ class CommunityAuditLogController extends Controller
         $query = AuditLog::with('user:id,name,email')
             ->where(function ($q) use ($communityId) {
                 $q->where('auditable_type', 'App\\Models\\Community')
-                  ->where('auditable_id', $communityId)
-                  ->orWhere(function ($q2) use ($communityId) {
-                      $q2->where('auditable_type', 'App\\Models\\CommunityMember')
-                         ->where('new_values->community_id', $communityId);
-                  })
-                  ->orWhere(function ($q2) use ($communityId) {
-                      $q2->where('auditable_type', 'App\\Models\\Event')
-                         ->where('new_values->community_id', $communityId);
-                  });
+                    ->where('auditable_id', $communityId)
+                    ->orWhere(function ($q2) use ($communityId) {
+                        $q2->where('auditable_type', 'App\\Models\\CommunityMember')
+                            ->where('new_values->community_id', $communityId);
+                    })
+                    ->orWhere(function ($q2) use ($communityId) {
+                        $q2->where('auditable_type', 'App\\Models\\Event')
+                            ->where('new_values->community_id', $communityId);
+                    });
             });
 
         if ($request->has('action')) {

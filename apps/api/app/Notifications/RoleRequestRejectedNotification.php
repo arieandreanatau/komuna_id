@@ -17,8 +17,7 @@ class RoleRequestRejectedNotification extends Notification
         private User $user,
         private string $roleName,
         private ?string $notes = null
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -29,7 +28,7 @@ class RoleRequestRejectedNotification extends Notification
     {
         $message = (new MailMessage)
             ->subject('Permintaan Role Ditolak - KomunaID')
-            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
+            ->greeting('Halo '.($this->user->full_name ?? $this->user->username).'!')
             ->line("Permintaan role \"{$this->roleName}\" Anda telah ditolak.");
 
         if ($this->notes) {
@@ -38,6 +37,6 @@ class RoleRequestRejectedNotification extends Notification
 
         return $message
             ->line('Anda dapat mengajukan permintaan baru jika diperlukan.')
-            ->action('Lihat Profil', config('app.frontend_url') . '/dashboard/profile');
+            ->action('Lihat Profil', config('app.frontend_url').'/dashboard/profile');
     }
 }

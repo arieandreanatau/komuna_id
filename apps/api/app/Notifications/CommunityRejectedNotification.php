@@ -17,8 +17,7 @@ class CommunityRejectedNotification extends Notification
         private User $user,
         private string $communityName,
         private ?string $reason = null
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -29,7 +28,7 @@ class CommunityRejectedNotification extends Notification
     {
         $message = (new MailMessage)
             ->subject('Komunitas Ditolak - KomunaID')
-            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
+            ->greeting('Halo '.($this->user->full_name ?? $this->user->username).'!')
             ->line("Komunitas \"{$this->communityName}\" ditolak.");
 
         if ($this->reason) {
@@ -38,6 +37,6 @@ class CommunityRejectedNotification extends Notification
 
         return $message
             ->line('Silakan perbaiki dan ajukan ulang.')
-            ->action('Lihat Dashboard', config('app.frontend_url') . '/dashboard');
+            ->action('Lihat Dashboard', config('app.frontend_url').'/dashboard');
     }
 }

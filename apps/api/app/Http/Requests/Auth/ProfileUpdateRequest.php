@@ -16,9 +16,9 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username' => 'sometimes|string|min:3|max:30|alpha_dash|unique:users,username,' . $this->user()?->id,
+            'username' => 'sometimes|string|min:3|max:30|alpha_dash|unique:users,username,'.$this->user()?->id,
             'full_name' => 'sometimes|nullable|string|max:255',
-            'email' => 'sometimes|nullable|email|max:255|unique:users,email,' . $this->user()?->id,
+            'email' => 'sometimes|nullable|email|max:255|unique:users,email,'.$this->user()?->id,
             'phone_number' => 'sometimes|nullable|string|max:20',
             'bio' => 'sometimes|nullable|string|max:1000',
             'phone' => 'sometimes|nullable|string|max:20',

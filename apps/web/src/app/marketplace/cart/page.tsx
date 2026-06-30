@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Tag, Shield, Truck, CreditCard } from "lucide-react";
+import {
+  Minus, Plus, Trash2, ShoppingBag, ArrowRight, Tag, Shield, Truck, CreditCard
+} from "lucide-react";
 
 const MOCK_CART = [
   { id: 1, name: "T-Shirt Komunitas Dev", seller: "ID Tech Community", price: 150000, quantity: 2, image: null },
@@ -14,7 +16,7 @@ const MOCK_CART = [
 const formatPrice = (price: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(price);
 
 export default function CartPage() {
-  const [items, _setItems] = useState(MOCK_CART);
+  const [items] = useState(MOCK_CART);
   const [promoCode, setPromoCode] = useState("");
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);

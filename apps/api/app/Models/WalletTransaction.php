@@ -20,6 +20,13 @@ class WalletTransaction extends Model
         return ['amount' => 'decimal:2'];
     }
 
-    public function wallet(): BelongsTo { return $this->belongsTo(Wallet::class); }
-    public function reference(): MorphTo { return $this->morphTo(); }
+    public function wallet(): BelongsTo
+    {
+        return $this->belongsTo(Wallet::class);
+    }
+
+    public function reference(): MorphTo
+    {
+        return $this->morphTo();
+    }
 }

@@ -240,7 +240,7 @@ export interface RoleRequest {
   id: number;
   user_id: number;
   role_id: number;
-  status: "pending" | "approved" | "rejected" | "revision";
+  status: "draft" | "submitted" | "under_review" | "need_revision" | "approved" | "rejected" | "suspended";
   notes: string | null;
   reviewed_by: number | null;
   reviewed_at: string | null;

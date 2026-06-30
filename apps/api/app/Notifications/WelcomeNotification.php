@@ -13,9 +13,7 @@ class WelcomeNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(private User $user)
-    {
-    }
+    public function __construct(private User $user) {}
 
     public function via(object $notifiable): array
     {
@@ -26,11 +24,11 @@ class WelcomeNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Selamat Datang di KomunaID!')
-            ->greeting("Halo {$this->user->full_name ?? $this->user->username}!")
+            ->greeting('Halo '.($this->user->full_name ?? $this->user->username).'!')
             ->line('Selamat datang di KomunaID, platform ekosistem komunitas.')
             ->line('Akun Anda telah berhasil dibuat dan siap digunakan.')
             ->line('Mulai jelajahi komunitas, event, dan berbagai peluang kolaborasi.')
-            ->action('Jelajahi Komunitas', config('app.frontend_url', 'http://localhost:3000') . '/communities')
+            ->action('Jelajahi Komunitas', config('app.frontend_url', 'http://localhost:3000').'/communities')
             ->line('CONNECT • COMMUNITY • GROW');
     }
 }

@@ -18,8 +18,7 @@ class InvitationNotification extends Notification
         private string $inviterName,
         private string $roleName,
         private string $token
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -28,11 +27,11 @@ class InvitationNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $acceptUrl = config('app.frontend_url') . "/invitations/{$this->token}/accept";
+        $acceptUrl = config('app.frontend_url')."/invitations/{$this->token}/accept";
 
         return (new MailMessage)
             ->subject('Anda Diundang ke KomunaID!')
-            ->greeting("Halo!")
+            ->greeting('Halo!')
             ->line("{$this->inviterName} mengundang Anda untuk bergabung dengan role \"{$this->roleName}\".")
             ->action('Terima Undangan', $acceptUrl)
             ->line('Jika Anda tidak ingin bergabung, abaikan email ini.');

@@ -6,22 +6,21 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Profile;
+use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\ProfileUpdateRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
-use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\ForgotPasswordRequest;
-use App\Http\Requests\Auth\ResetPasswordRequest;
-use App\Http\Requests\Auth\ProfileUpdateRequest;
-use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Services\FileUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
-use App\Services\EmailNotificationService;
-use App\Services\FileUploadService;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -102,7 +101,7 @@ class AuthController extends Controller
         $user->load(['profile', 'roles.role']);
 
         return $this->successResponse([
-            'user' => new \App\Http\Resources\UserResource($user),
+            'user' => new UserResource($user),
             'token' => $token,
         ], 'Login berhasil');
     }
@@ -119,7 +118,7 @@ class AuthController extends Controller
         $user = $request->user();
         $user->load(['profile', 'roles.role']);
 
-        return $this->successResponse(new \App\Http\Resources\UserResource($user));
+        return $this->successResponse(new UserResource($user));
     }
 
     public function updateProfile(ProfileUpdateRequest $request): JsonResponse

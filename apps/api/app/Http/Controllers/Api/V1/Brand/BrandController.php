@@ -8,6 +8,7 @@ use App\Enums\ApprovalStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Brand\BrandStoreRequest;
 use App\Http\Requests\Brand\BrandUpdateRequest;
+use App\Http\Resources\BrandResource;
 use App\Models\Brand;
 use App\Models\BrandMember;
 use App\Services\AuditLogService;
@@ -20,7 +21,8 @@ class BrandController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $brand = Brand::with(['owner', 'organization', 'members.user'])->findOrFail($id);
-        return $this->successResponse(new \App\Http\Resources\BrandResource($brand));
+
+        return $this->successResponse(new BrandResource($brand));
     }
 
     public function store(BrandStoreRequest $request): JsonResponse
@@ -96,6 +98,7 @@ class BrandController extends Controller
 
         $brand->update(['status' => ApprovalStatus::APPROVED]);
         AuditLogService::approvalAction('approved', $brand, $request->input('notes'), $request);
+
         return $this->successResponse($brand, 'Brand disetujui');
     }
 
@@ -108,6 +111,7 @@ class BrandController extends Controller
             'rejection_reason' => $validated['rejection_reason'],
         ]);
         AuditLogService::approvalAction('rejected', $brand, $validated['rejection_reason'], $request);
+
         return $this->successResponse($brand, 'Brand ditolak');
     }
 
@@ -120,6 +124,7 @@ class BrandController extends Controller
             'rejection_reason' => $validated['notes'],
         ]);
         AuditLogService::approvalAction('revision_requested', $brand, $validated['notes'], $request);
+
         return $this->successResponse($brand, 'Revisi diminta');
     }
 
@@ -131,6 +136,7 @@ class BrandController extends Controller
         }
         $brand->update(['status' => ApprovalStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $brand, null, $request);
+
         return $this->successResponse($brand, 'Brand diarsipkan');
     }
 
@@ -139,6 +145,7 @@ class BrandController extends Controller
         $members = BrandMember::with('user')
             ->where('brand_id', $id)
             ->paginate(min((int) $request->get('per_page', 15), 50));
+
         return $this->paginatedResponse($members);
     }
 }

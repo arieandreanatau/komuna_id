@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Member;
 
 use App\Http\Controllers\Controller;
-use App\Models\VolunteerOpportunity;
 use App\Models\VolunteerApplication;
+use App\Models\VolunteerOpportunity;
 use App\Services\AuditLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,12 +24,14 @@ class VolunteerController extends Controller
         }
 
         $opportunities = $query->latest()->paginate($request->get('per_page', 15));
+
         return $this->paginatedResponse($opportunities);
     }
 
     public function show(int $id): JsonResponse
     {
         $opportunity = VolunteerOpportunity::with(['community', 'organizer'])->findOrFail($id);
+
         return $this->successResponse($opportunity);
     }
 

@@ -14,6 +14,7 @@ class EventFactory extends Factory
     public function definition(): array
     {
         $title = fake()->unique()->words(3, true);
+
         return [
             'uuid' => fake()->uuid(),
             'title' => ucfirst($title),

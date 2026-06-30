@@ -4,10 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { EventRegistration } from "@/types/api";
+import type {
+  EventRegistration
+} from "@/types/api";
 
 export default function MyEventsPage() {
-  const {_user, loading: authLoading} = useAuth();
+  const { loading: authLoading } = useAuth();
   const router = useRouter();
   const { data, loading, error } = useApi<{ data: EventRegistration[] }>("/me/events");
 

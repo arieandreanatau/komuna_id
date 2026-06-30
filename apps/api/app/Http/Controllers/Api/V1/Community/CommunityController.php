@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Community;
 
+use App\Actions\ApproveCommunityAction;
+use App\Actions\CreateCommunityAction;
+use App\Actions\UpdateCommunityAction;
 use App\Enums\CommunityStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Community\CommunityStoreRequest;
 use App\Http\Requests\Community\CommunityUpdateRequest;
+use App\Http\Resources\CommunityResource;
 use App\Models\Community;
 use App\Models\CommunityCategory;
 use App\Models\CommunityJoinRequest;
@@ -34,7 +38,7 @@ class CommunityController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -51,12 +55,12 @@ class CommunityController extends Controller
             ->where('status', CommunityStatus::APPROVED)
             ->firstOrFail();
 
-        return $this->successResponse(new \App\Http\Resources\CommunityResource($community));
+        return $this->successResponse(new CommunityResource($community));
     }
 
     public function store(CommunityStoreRequest $request): JsonResponse
     {
-        $action = new \App\Actions\CreateCommunityAction();
+        $action = new CreateCommunityAction;
         $community = $action->execute($request->validated(), $request);
 
         return $this->successResponse($community, 'Komunitas berhasil dibuat', 201);
@@ -68,7 +72,7 @@ class CommunityController extends Controller
 
         $this->authorize('update', $community);
 
-        $action = new \App\Actions\UpdateCommunityAction();
+        $action = new UpdateCommunityAction;
         $community = $action->execute($request->validated(), $id, $request);
 
         return $this->successResponse($community, 'Komunitas berhasil diperbarui');
@@ -94,7 +98,7 @@ class CommunityController extends Controller
     {
         $community = Community::findOrFail($id);
 
-        $action = new \App\Actions\ApproveCommunityAction();
+        $action = new ApproveCommunityAction;
         $community = $action->execute($id, $request->input('notes'), $request);
 
         return $this->successResponse($community, 'Komunitas berhasil disetujui');
@@ -189,7 +193,7 @@ class CommunityController extends Controller
             'user_id' => $community->owner_id,
             'type' => 'community',
             'title' => 'Anggota Baru',
-            'message' => ($request->user()->full_name ?? $request->user()->username) . ' telah bergabung ke komunitas ' . $community->name,
+            'message' => ($request->user()->full_name ?? $request->user()->username).' telah bergabung ke komunitas '.$community->name,
             'data' => ['community_id' => $community->id, 'user_id' => $request->user()->id],
         ]);
 
@@ -232,7 +236,7 @@ class CommunityController extends Controller
     public function approveMember(Request $request, int $communityId, int $userId): JsonResponse
     {
         $isCommunityAdmin = CommunityMember::where('community_id', $communityId)->where('user_id', $request->user()->id)->whereIn('role', ['admin', 'moderator'])->where('status', 'active')->exists();
-        if (!$isCommunityAdmin && !$request->user()->isAdmin()) {
+        if (! $isCommunityAdmin && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -267,7 +271,7 @@ class CommunityController extends Controller
     public function rejectMember(Request $request, int $communityId, int $userId): JsonResponse
     {
         $isCommunityAdmin = CommunityMember::where('community_id', $communityId)->where('user_id', $request->user()->id)->whereIn('role', ['admin', 'moderator'])->where('status', 'active')->exists();
-        if (!$isCommunityAdmin && !$request->user()->isAdmin()) {
+        if (! $isCommunityAdmin && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -292,7 +296,7 @@ class CommunityController extends Controller
     public function banMember(Request $request, int $communityId, int $userId): JsonResponse
     {
         $isCommunityAdmin = CommunityMember::where('community_id', $communityId)->where('user_id', $request->user()->id)->whereIn('role', ['admin', 'moderator'])->where('status', 'active')->exists();
-        if (!$isCommunityAdmin && !$request->user()->isAdmin()) {
+        if (! $isCommunityAdmin && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -314,6 +318,7 @@ class CommunityController extends Controller
     public function categories(): JsonResponse
     {
         $categories = CommunityCategory::where('is_active', true)->get();
+
         return $this->successResponse($categories);
     }
 
@@ -321,7 +326,7 @@ class CommunityController extends Controller
     {
         $communities = Community::with(['category'])
             ->where('owner_id', $request->user()->id)
-            ->orWhereHas('members', fn($q) => $q->where('user_id', $request->user()->id)->where('status', 'active'))
+            ->orWhereHas('members', fn ($q) => $q->where('user_id', $request->user()->id)->where('status', 'active'))
             ->paginate(min((int) $request->get('per_page', 15), 50));
 
         return $this->paginatedResponse($communities);

@@ -5,9 +5,13 @@ import { fetchApi } from "@/lib/api";
 
 interface User {
   id: number;
+  username: string;
+  full_name: string | null;
   name: string;
-  email: string;
+  email: string | null;
+  phone_number: string | null;
   status: string;
+  verification_level: number;
   created_at: string;
 }
 
@@ -24,7 +28,9 @@ export default function AdminUsersPage() {
   }, []);
 
   const filtered = users.filter(
-    (u) => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
+    (u) => (u.name || "").toLowerCase().includes(search.toLowerCase()) ||
+           u.username.toLowerCase().includes(search.toLowerCase()) ||
+           (u.email || "").toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-blue border-t-transparent" /></div>;
@@ -40,8 +46,10 @@ export default function AdminUsersPage() {
         <table className="w-full text-sm">
           <thead className="bg-brand-light-gray">
             <tr>
+              <th className="px-4 py-3 text-left font-medium text-brand-navy">Username</th>
               <th className="px-4 py-3 text-left font-medium text-brand-navy">Nama</th>
               <th className="px-4 py-3 text-left font-medium text-brand-navy">Email</th>
+              <th className="px-4 py-3 text-left font-medium text-brand-navy">Level</th>
               <th className="px-4 py-3 text-left font-medium text-brand-navy">Status</th>
               <th className="px-4 py-3 text-left font-medium text-brand-navy">Terdaftar</th>
             </tr>
@@ -49,8 +57,10 @@ export default function AdminUsersPage() {
           <tbody className="divide-y divide-border">
             {filtered.map((user) => (
               <tr key={user.id} className="hover:bg-muted/50">
-                <td className="px-4 py-3 font-medium text-brand-navy">{user.name}</td>
-                <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
+                <td className="px-4 py-3 font-medium text-brand-navy">{user.username}</td>
+                <td className="px-4 py-3 text-muted-foreground">{user.full_name || "-"}</td>
+                <td className="px-4 py-3 text-muted-foreground">{user.email || "-"}</td>
+                <td className="px-4 py-3 text-muted-foreground">L{user.verification_level}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
                     user.status === "active" ? "bg-brand-teal/10 text-brand-teal" :

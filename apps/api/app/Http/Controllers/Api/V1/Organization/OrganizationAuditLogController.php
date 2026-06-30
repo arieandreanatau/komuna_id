@@ -16,22 +16,22 @@ class OrganizationAuditLogController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $query = AuditLog::with('user:id,name,email')
             ->where(function ($q) use ($organizationId) {
                 $q->where('auditable_type', 'App\\Models\\Organization')
-                  ->where('auditable_id', $organizationId)
-                  ->orWhere(function ($q2) use ($organizationId) {
-                      $q2->where('auditable_type', 'App\\Models\\OrganizationMember')
-                         ->where('new_values->organization_id', $organizationId);
-                  })
-                  ->orWhere(function ($q2) use ($organizationId) {
-                      $q2->where('auditable_type', 'App\\Models\\Brand')
-                         ->where('new_values->organization_id', $organizationId);
-                  });
+                    ->where('auditable_id', $organizationId)
+                    ->orWhere(function ($q2) use ($organizationId) {
+                        $q2->where('auditable_type', 'App\\Models\\OrganizationMember')
+                            ->where('new_values->organization_id', $organizationId);
+                    })
+                    ->orWhere(function ($q2) use ($organizationId) {
+                        $q2->where('auditable_type', 'App\\Models\\Brand')
+                            ->where('new_values->organization_id', $organizationId);
+                    });
             });
 
         if ($request->has('action')) {

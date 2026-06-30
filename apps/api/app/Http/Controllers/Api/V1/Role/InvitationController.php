@@ -59,7 +59,7 @@ class InvitationController extends Controller
             'user_id' => $request->user()->id,
             'type' => 'invitation',
             'title' => 'Undangan Diterima',
-            'message' => 'Anda telah menerima undangan sebagai ' . $invitation->role->name,
+            'message' => 'Anda telah menerima undangan sebagai '.$invitation->role->name,
             'data' => ['invitation_id' => $invitation->id],
         ]);
 

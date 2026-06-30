@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  Wallet, ChevronLeft, Check, Building2, CreditCard, AlertTriangle, ArrowDownLeft
+  ChevronLeft, Check, Building2, AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 

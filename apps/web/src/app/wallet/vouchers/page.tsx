@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  Tag, ChevronLeft, Check, Clock, Copy, Ticket, Percent, Calendar
+  ChevronLeft, Check, Copy, Ticket, Calendar
 } from "lucide-react";
 import Link from "next/link";
 

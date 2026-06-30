@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Brand;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Brand;
-use App\Models\Campaign;
 use App\Models\Collaboration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ class BrandDashboardController extends Controller
     {
         $brand = Brand::findOrFail($brandId);
 
-        if ($brand->owner_id !== $request->user()->id && !$brand->hasMemberRole($request->user()->id, 'admin', 'manager')) {
+        if ($brand->owner_id !== $request->user()->id && ! $brand->hasMemberRole($request->user()->id, 'admin', 'manager')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -30,13 +30,13 @@ class BrandDashboardController extends Controller
             ->where('receiver_id', $brandId)
             ->count();
 
-        $recentActivity = \App\Models\AuditLog::where(function ($q) use ($brandId) {
+        $recentActivity = AuditLog::where(function ($q) use ($brandId) {
             $q->where('auditable_type', 'App\\Models\\Brand')
-              ->where('auditable_id', $brandId)
-              ->orWhere(function ($q2) use ($brandId) {
-                  $q2->where('auditable_type', 'App\\Models\\Campaign')
-                     ->where('new_values->brand_id', $brandId);
-              });
+                ->where('auditable_id', $brandId)
+                ->orWhere(function ($q2) use ($brandId) {
+                    $q2->where('auditable_type', 'App\\Models\\Campaign')
+                        ->where('new_values->brand_id', $brandId);
+                });
         })->latest()->limit(10)->get();
 
         return $this->successResponse([

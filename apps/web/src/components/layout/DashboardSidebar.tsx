@@ -8,12 +8,7 @@ import { BRAND } from "@/constants";
 import { fetchApi } from "@/lib/api";
 import type { AuthUser } from "@/types/api";
 import {
-  Home, User, Users, Calendar, Ticket, Heart, Shield, Bell, Settings,
-  Building, Star, Handshake, FileText, List, LogOut, ChevronLeft, ChevronRight,
-  ShoppingBag, Wallet, MessageCircle, Flag, BarChart3, HelpCircle, FileCheck,
-  MapPin, Megaphone, BookOpen, Image as ImageIcon, Video, Upload, Download,
-  AlertTriangle, Eye, Search, Filter, Lock, Unlock, CreditCard, Receipt,
-  Store, Package, Map, ClipboardList, ClipboardCheck, TrendingUp, DollarSign
+  Home, User, Users, Calendar, Ticket, Heart, Shield, Bell, Settings, Building, Star, Handshake, FileText, List, LogOut, ChevronLeft, ChevronRight, Flag, FileCheck
 } from "lucide-react";
 
 interface SidebarLink {

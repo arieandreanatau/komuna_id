@@ -6,9 +6,14 @@ import { fetchApi } from "@/lib/api";
 
 interface UserProfile {
   id: number;
+  username: string;
+  full_name: string | null;
   name: string;
-  email: string;
+  email: string | null;
+  phone_number: string | null;
   status: string;
+  verification_level: number;
+  email_verified_at: string | null;
   profile: {
     bio: string | null;
     avatar: string | null;
@@ -23,7 +28,9 @@ export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [bio, setBio] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
@@ -35,7 +42,9 @@ export default function ProfilePage() {
     fetchApi<UserProfile>("/auth/me")
       .then((res) => {
         setUser(res.data);
-        setName(res.data.name);
+        setFullName(res.data.full_name || "");
+        setEmail(res.data.email || "");
+        setPhoneNumber(res.data.phone_number || "");
         setBio(res.data.profile?.bio || "");
         setPhone(res.data.profile?.phone || "");
         setLocation(res.data.profile?.location || "");
@@ -49,9 +58,14 @@ export default function ProfilePage() {
     setMessage("");
 
     try {
+      const body: Record<string, string> = { bio, phone, location, website };
+      if (fullName) body.full_name = fullName;
+      if (email) body.email = email;
+      if (phoneNumber) body.phone_number = phoneNumber;
+
       await fetchApi("/auth/profile", {
         method: "PUT",
-        body: JSON.stringify({ name, bio, phone, location, website }),
+        body: JSON.stringify(body),
       });
       setMessage("Profil berhasil diperbarui");
     } catch {
@@ -69,6 +83,13 @@ export default function ProfilePage() {
     );
   }
 
+  const initials = (fullName || user?.username || "U")
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <div className="max-w-2xl space-y-6">
       <div>
@@ -82,12 +103,19 @@ export default function ProfilePage() {
             {user?.profile?.avatar ? (
               <img src={user.profile.avatar} alt="Avatar" className="h-full w-full rounded-full object-cover" />
             ) : (
-              name.charAt(0).toUpperCase()
+              initials
             )}
           </div>
           <div>
             <p className="font-medium text-brand-navy">{user?.name}</p>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <p className="text-sm text-muted-foreground">@{user?.username}</p>
+            <p className="text-xs text-muted-foreground">{user?.email || "Belum ada email"}</p>
+            {!user?.email_verified_at && user?.email && (
+              <p className="mt-1 text-xs text-brand-orange">
+                Email belum diverifikasi —{" "}
+                <button className="text-brand-blue hover:underline">Verifikasi sekarang</button>
+              </p>
+            )}
             <button className="mt-2 text-sm text-brand-blue hover:underline">
               Ubah Foto Profil
             </button>
@@ -96,24 +124,53 @@ export default function ProfilePage() {
       </div>
 
       <div className="rounded-xl border border-border bg-white p-6 space-y-5">
-        <div>
-          <label className="block text-sm font-medium text-brand-navy">Nama</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
-          />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-brand-navy">Nama Lengkap</label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
+              placeholder="Nama lengkap kamu"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-brand-navy">Username</label>
+            <input
+              type="text"
+              value={user?.username || ""}
+              disabled
+              className="mt-1 block w-full rounded-lg border border-border bg-muted px-4 py-2.5 text-sm text-muted-foreground"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Username tidak dapat diubah</p>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-brand-navy">Email</label>
-          <input
-            type="email"
-            value={user?.email || ""}
-            disabled
-            className="mt-1 block w-full rounded-lg border border-border bg-muted px-4 py-2.5 text-sm text-muted-foreground"
-          />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-brand-navy">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
+              placeholder="email@contoh.com"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Opsional — bisa ditambahkan nanti</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-brand-navy">Nomor WhatsApp</label>
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
+              placeholder="08xxxxxxxxxx"
+            />
+          </div>
         </div>
 
         <div>

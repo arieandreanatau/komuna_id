@@ -43,7 +43,7 @@ class ValidateFileUpload
                 'success' => false,
                 'message' => 'Format file tidak valid',
                 'data' => null,
-                'errors' => ['file' => ['Format yang diizinkan: ' . implode(', ', $rules['mimes'])]],
+                'errors' => ['file' => ['Format yang diizinkan: '.implode(', ', $rules['mimes'])]],
                 'meta' => null,
             ], 422);
         }
@@ -53,7 +53,7 @@ class ValidateFileUpload
                 'success' => false,
                 'message' => 'Ukuran file terlalu besar',
                 'data' => null,
-                'errors' => ['file' => ['Ukuran maksimal: ' . $rules['max_size'] . 'KB']],
+                'errors' => ['file' => ['Ukuran maksimal: '.$rules['max_size'].'KB']],
                 'meta' => null,
             ], 422);
         }

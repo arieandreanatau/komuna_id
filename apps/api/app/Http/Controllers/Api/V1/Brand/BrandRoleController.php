@@ -22,7 +22,7 @@ class BrandRoleController extends Controller
     {
         $brand = Brand::findOrFail($brandId);
 
-        if ($brand->owner_id !== $request->user()->id && !$brand->hasMemberRole($request->user()->id, 'admin')) {
+        if ($brand->owner_id !== $request->user()->id && ! $brand->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -38,7 +38,7 @@ class BrandRoleController extends Controller
     {
         $brand = Brand::findOrFail($brandId);
 
-        if ($brand->owner_id !== $request->user()->id && !$brand->hasMemberRole($request->user()->id, 'admin')) {
+        if ($brand->owner_id !== $request->user()->id && ! $brand->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -50,7 +50,7 @@ class BrandRoleController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user) {
+        if (! $user) {
             return $this->errorResponse('User dengan email tersebut tidak ditemukan', 422);
         }
 
@@ -82,7 +82,7 @@ class BrandRoleController extends Controller
     {
         $brand = Brand::findOrFail($brandId);
 
-        if ($brand->owner_id !== $request->user()->id && !$brand->hasMemberRole($request->user()->id, 'admin')) {
+        if ($brand->owner_id !== $request->user()->id && ! $brand->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -126,7 +126,7 @@ class BrandRoleController extends Controller
     {
         $brand = Brand::findOrFail($brandId);
 
-        if ($brand->owner_id !== $request->user()->id && !$brand->hasMemberRole($request->user()->id, 'admin')) {
+        if ($brand->owner_id !== $request->user()->id && ! $brand->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -161,7 +161,7 @@ class BrandRoleController extends Controller
             'user_id' => $member->user_id,
             'type' => 'brand',
             'title' => 'Role Dicabut',
-            'message' => 'Role Anda sebagai ' . $oldRole . ' di brand ' . $brand->name . ' telah dicabut',
+            'message' => 'Role Anda sebagai '.$oldRole.' di brand '.$brand->name.' telah dicabut',
             'data' => ['brand_id' => $brandId],
         ]);
 
@@ -172,7 +172,7 @@ class BrandRoleController extends Controller
     {
         $brand = Brand::findOrFail($brandId);
 
-        if ($brand->owner_id !== $request->user()->id && !$brand->hasMemberRole($request->user()->id, 'admin')) {
+        if ($brand->owner_id !== $request->user()->id && ! $brand->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 

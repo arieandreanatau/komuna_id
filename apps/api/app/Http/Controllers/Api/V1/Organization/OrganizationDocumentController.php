@@ -18,7 +18,7 @@ class OrganizationDocumentController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin', 'manager')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin', 'manager')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -38,7 +38,7 @@ class OrganizationDocumentController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -70,7 +70,7 @@ class OrganizationDocumentController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 

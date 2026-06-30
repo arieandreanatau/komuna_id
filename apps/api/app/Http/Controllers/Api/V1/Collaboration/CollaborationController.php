@@ -8,6 +8,7 @@ use App\Enums\CollaborationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Collaboration\CollaborationStoreRequest;
 use App\Http\Requests\Collaboration\CollaborationUpdateRequest;
+use App\Http\Resources\CollaborationResource;
 use App\Models\Collaboration;
 use App\Models\CollaborationDeliverable;
 use App\Services\AuditLogService;
@@ -34,7 +35,8 @@ class CollaborationController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $collab = Collaboration::with(['sender', 'receiver', 'deliverables'])->findOrFail($id);
-        return $this->successResponse(new \App\Http\Resources\CollaborationResource($collab));
+
+        return $this->successResponse(new CollaborationResource($collab));
     }
 
     public function store(CollaborationStoreRequest $request): JsonResponse
@@ -56,7 +58,7 @@ class CollaborationController extends Controller
     {
         $collab = Collaboration::findOrFail($id);
 
-        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -74,12 +76,13 @@ class CollaborationController extends Controller
     {
         $collab = Collaboration::findOrFail($id);
 
-        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $collab->update(['status' => CollaborationStatus::NEGOTIATION]);
         AuditLogService::approvalAction('accepted', $collab, null, $request);
+
         return $this->successResponse($collab, 'Kolaborasi diterima');
     }
 
@@ -87,12 +90,13 @@ class CollaborationController extends Controller
     {
         $collab = Collaboration::findOrFail($id);
 
-        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $collab->update(['status' => CollaborationStatus::REJECTED]);
         AuditLogService::approvalAction('rejected', $collab, null, $request);
+
         return $this->successResponse($collab, 'Kolaborasi ditolak');
     }
 
@@ -101,12 +105,13 @@ class CollaborationController extends Controller
         $validated = $request->validate(['notes' => 'required|string|max:1000']);
         $collab = Collaboration::findOrFail($id);
 
-        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $collab->update(['status' => CollaborationStatus::PROPOSAL]);
         AuditLogService::approvalAction('revision_requested', $collab, $validated['notes'], $request);
+
         return $this->successResponse($collab, 'Revisi diminta');
     }
 
@@ -114,12 +119,13 @@ class CollaborationController extends Controller
     {
         $collab = Collaboration::findOrFail($id);
 
-        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $collab->update(['status' => CollaborationStatus::ACTIVE]);
         AuditLogService::approvalAction('started', $collab, null, $request);
+
         return $this->successResponse($collab, 'Kolaborasi dimulai');
     }
 
@@ -127,12 +133,13 @@ class CollaborationController extends Controller
     {
         $collab = Collaboration::findOrFail($id);
 
-        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $collab->update(['status' => CollaborationStatus::COMPLETED]);
         AuditLogService::approvalAction('completed', $collab, null, $request);
+
         return $this->successResponse($collab, 'Kolaborasi selesai');
     }
 
@@ -140,12 +147,13 @@ class CollaborationController extends Controller
     {
         $collab = Collaboration::findOrFail($id);
 
-        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && !$request->user()->isAdmin()) {
+        if ($collab->sender_id !== $request->user()->id && $collab->receiver_id !== $request->user()->id && ! $request->user()->isAdmin()) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
         $collab->update(['status' => CollaborationStatus::ARCHIVED]);
         AuditLogService::approvalAction('archived', $collab, null, $request);
+
         return $this->successResponse($collab, 'Kolaborasi diarsipkan');
     }
 
@@ -154,6 +162,7 @@ class CollaborationController extends Controller
         $deliverables = CollaborationDeliverable::where('collaboration_id', $id)
             ->orderBy('created_at', 'desc')
             ->get();
+
         return $this->successResponse($deliverables);
     }
 

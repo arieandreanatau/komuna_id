@@ -18,7 +18,7 @@ class OrganizationDashboardController extends Controller
     {
         $org = Organization::findOrFail($organizationId);
 
-        if ($org->owner_id !== $request->user()->id && !$org->hasMemberRole($request->user()->id, 'admin')) {
+        if ($org->owner_id !== $request->user()->id && ! $org->hasMemberRole($request->user()->id, 'admin')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 
@@ -27,19 +27,19 @@ class OrganizationDashboardController extends Controller
         $totalCampaigns = Campaign::where('organization_id', $organizationId)->count();
         $totalCollaborations = Collaboration::where(function ($q) use ($organizationId) {
             $q->where('sender_type', 'App\\Models\\Organization')
-              ->where('sender_id', $organizationId)
-              ->orWhere(function ($q2) use ($organizationId) {
-                  $q2->where('receiver_type', 'App\\Models\\Organization')
-                     ->where('receiver_id', $organizationId);
-              });
+                ->where('sender_id', $organizationId)
+                ->orWhere(function ($q2) use ($organizationId) {
+                    $q2->where('receiver_type', 'App\\Models\\Organization')
+                        ->where('receiver_id', $organizationId);
+                });
         })->count();
 
         $recentActivity = AuditLog::where(function ($q) use ($organizationId) {
             $q->where('auditable_type', 'App\\Models\\Organization')
-              ->where('auditable_id', $organizationId)
-              ->orWhere(function ($q2) use ($organizationId) {
-                  $q2->where('auditable_type', 'App\\Models\\Brand');
-              });
+                ->where('auditable_id', $organizationId)
+                ->orWhere(function ($q2) {
+                    $q2->where('auditable_type', 'App\\Models\\Brand');
+                });
         })->latest()->limit(10)->get();
 
         return $this->successResponse([

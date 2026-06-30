@@ -16,7 +16,7 @@ class EnsureBrandRole
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated',
@@ -42,7 +42,7 @@ class EnsureBrandRole
 
         $brandId = $request->route('brandId') ?? $request->route('id');
 
-        if (!$brandId) {
+        if (! $brandId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Brand ID tidak ditemukan',
@@ -54,7 +54,7 @@ class EnsureBrandRole
 
         $brand = Brand::find($brandId);
 
-        if (!$brand) {
+        if (! $brand) {
             return response()->json([
                 'success' => false,
                 'message' => 'Brand tidak ditemukan',

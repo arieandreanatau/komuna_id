@@ -15,6 +15,7 @@ class CommunityFactory extends Factory
     public function definition(): array
     {
         $name = fake()->unique()->words(3, true);
+
         return [
             'uuid' => fake()->uuid(),
             'name' => ucfirst($name),

@@ -4,10 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { fetchApi } from "@/lib/api";
 import { useState, useEffect } from "react";
-import type { RoleRequest, Role } from "@/types/api";
+import type {
+  RoleRequest, Role
+} from "@/types/api";
 
 export default function RoleRequestsPage() {
-  const {_user, loading: authLoading} = useAuth();
+  const { loading: authLoading } = useAuth();
   const { data, loading, error, execute } = useApi<{ data: RoleRequest[] }>("/me/role-requests");
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState("");
@@ -56,17 +58,23 @@ export default function RoleRequestsPage() {
   const requests = data?.data || [];
 
   const statusColors: Record<string, string> = {
-    pending: "bg-yellow-50 text-yellow-600",
+    draft: "bg-gray-100 text-gray-600",
+    submitted: "bg-yellow-50 text-yellow-600",
+    under_review: "bg-brand-blue/10 text-brand-blue",
+    need_revision: "bg-brand-orange/10 text-brand-orange",
     approved: "bg-brand-teal/10 text-brand-teal",
     rejected: "bg-red-50 text-red-600",
-    revision: "bg-brand-blue/10 text-brand-blue",
+    suspended: "bg-gray-100 text-gray-600",
   };
 
   const statusLabels: Record<string, string> = {
-    pending: "Menunggu Review",
+    draft: "Draft",
+    submitted: "Menunggu Review",
+    under_review: "Sedang Direview",
+    need_revision: "Perlu Revisi",
     approved: "Disetujui",
     rejected: "Ditolak",
-    revision: "Perlu Revisi",
+    suspended: "Ditangguhkan",
   };
 
   return (

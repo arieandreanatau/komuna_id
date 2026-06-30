@@ -17,7 +17,7 @@ class UploadController extends Controller
             'file' => 'required|file|max:10240|mimes:jpeg,jpg,png,gif,webp,svg,pdf,doc,docx,xls,xlsx,ppt,pptx,zip',
         ]);
 
-        $path = FileUploadService::uploadPublic($request->file('file'), $request->user()->id . '/' . now()->format('Y-m'));
+        $path = FileUploadService::uploadPublic($request->file('file'), $request->user()->id.'/'.now()->format('Y-m'));
         $url = FileUploadService::getPublicUrl($path);
 
         return $this->successResponse([
@@ -34,7 +34,7 @@ class UploadController extends Controller
 
         $path = $validated['path'];
 
-        if (str_contains($path, '..') || !str_starts_with($path, (string) $request->user()->id . '/')) {
+        if (str_contains($path, '..') || ! str_starts_with($path, (string) $request->user()->id.'/')) {
             return $this->errorResponse('Tidak memiliki akses', 403);
         }
 

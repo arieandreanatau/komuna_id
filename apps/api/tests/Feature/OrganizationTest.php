@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Enums\ApprovalStatus;
 use App\Models\Organization;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -54,7 +55,7 @@ class OrganizationTest extends TestCase
     public function test_organization_can_be_approved_by_admin(): void
     {
         $admin = User::factory()->create();
-        $admin->roles()->create(['role_id' => \App\Models\Role::firstOrCreate(['name' => 'Super Admin', 'slug' => 'super-admin', 'scope' => 'platform'])->id, 'is_active' => true]);
+        $admin->roles()->create(['role_id' => Role::firstOrCreate(['name' => 'Super Admin', 'slug' => 'super-admin', 'scope' => 'platform'])->id, 'is_active' => true]);
         $org = Organization::factory()->create(['status' => ApprovalStatus::PENDING_REVIEW]);
 
         $response = $this->actingAs($admin)->postJson("/api/v1/organizations/{$org->id}/approve");

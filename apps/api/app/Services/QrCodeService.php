@@ -6,7 +6,6 @@ namespace App\Services;
 
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
-use Endroid\QrCode\WriterResult\WriterResult;
 use Illuminate\Support\Facades\Storage;
 
 class QrCodeService
@@ -18,10 +17,10 @@ class QrCodeService
                 ->setSize($size)
                 ->setMargin(10);
 
-            $writer = new PngWriter();
+            $writer = new PngWriter;
             $result = $writer->write($qrCode);
 
-            $filename = 'qr/' . md5($data) . '_' . time() . '.png';
+            $filename = 'qr/'.md5($data).'_'.time().'.png';
             Storage::disk('public')->put($filename, $result->getString());
 
             return $filename;
@@ -37,10 +36,10 @@ class QrCodeService
                 ->setSize($size)
                 ->setMargin(10);
 
-            $writer = new PngWriter();
+            $writer = new PngWriter;
             $result = $writer->write($qrCode);
 
-            return 'data:image/png;base64,' . base64_encode($result->getString());
+            return 'data:image/png;base64,'.base64_encode($result->getString());
         } catch (\Throwable) {
             return null;
         }

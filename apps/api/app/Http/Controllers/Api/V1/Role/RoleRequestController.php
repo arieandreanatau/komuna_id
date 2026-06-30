@@ -39,7 +39,7 @@ class RoleRequestController extends Controller
             'user_id' => $roleRequest->user_id,
             'type' => 'role',
             'title' => 'Role Disetujui',
-            'message' => 'Role ' . $roleRequest->role->name . ' Anda telah disetujui.',
+            'message' => 'Role '.$roleRequest->role->name.' Anda telah disetujui.',
             'data' => ['role_request_id' => $roleRequest->id],
         ]);
 
@@ -64,7 +64,7 @@ class RoleRequestController extends Controller
             'user_id' => $roleRequest->user_id,
             'type' => 'role',
             'title' => 'Role Ditolak',
-            'message' => 'Role ' . $roleRequest->role->name . ' Anda telah ditolak.',
+            'message' => 'Role '.$roleRequest->role->name.' Anda telah ditolak.',
             'data' => ['role_request_id' => $roleRequest->id],
         ]);
 
@@ -78,7 +78,7 @@ class RoleRequestController extends Controller
         $roleRequest = RoleRequest::findOrFail($id);
 
         $roleRequest->update([
-            'status' => 'revision',
+            'status' => 'need_revision',
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
@@ -88,7 +88,7 @@ class RoleRequestController extends Controller
             'user_id' => $roleRequest->user_id,
             'type' => 'role',
             'title' => 'Role Perlu Revisi',
-            'message' => 'Role ' . $roleRequest->role->name . ' Anda perlu revisi.',
+            'message' => 'Role '.$roleRequest->role->name.' Anda perlu revisi.',
             'data' => ['role_request_id' => $roleRequest->id],
         ]);
 

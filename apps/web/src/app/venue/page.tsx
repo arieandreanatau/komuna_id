@@ -5,8 +5,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import {
-  Search, Filter, MapPin, Star, Users, Wifi, Car, Coffee, Map,
-  ChevronRight, Grid, List, Building2
+  Search, MapPin, Star, Map, Building2
 } from "lucide-react";
 
 const CATEGORIES = [
