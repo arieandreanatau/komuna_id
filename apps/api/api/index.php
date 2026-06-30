@@ -21,16 +21,16 @@ foreach ($dirs as $dir) {
     }
 }
 
+putenv('VIEW_COMPILED_PATH=' . $tmpStorage . '/framework/views');
+putenv('SESSION_DRIVER=array');
+putenv('CACHE_STORE=array');
+putenv('LOG_CHANNEL=stderr');
+
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
 $app->useStoragePath($tmpStorage);
 
-$app->booted(function ($app) use ($tmpStorage) {
-    $config = $app['config'];
-    $config->set('view.compiled', $tmpStorage . '/framework/views');
-    $config->set('session.path', $tmpStorage . '/framework/sessions');
-    $config->set('cache.stores.file.path', $tmpStorage . '/framework/cache/data');
-    $config->set('logging.channels.single.path', $tmpStorage . '/logs/laravel.log');
-});
-
-$app->handleRequest(Request::capture());
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+$response = $kernel->handle($request = Request::capture());
+$response->send();
+$kernel->terminate($request, $response);
