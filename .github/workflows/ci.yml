@@ -25,12 +25,12 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, xml, ctype, json, bcmath, pdo, pdo_mysql, gd, redis
           coverage: xdebug
-      - name: Install Composer Dependencies
-        run: composer install --no-progress --prefer-dist
-        working-directory: apps/api
       - name: Prepare Environment
         working-directory: apps/api
         run: cp .env.example .env && php artisan key:generate
+      - name: Install Composer Dependencies
+        run: composer install --no-progress --prefer-dist
+        working-directory: apps/api
       - name: Run Migrations
         working-directory: apps/api
         env:
@@ -76,6 +76,8 @@ jobs:
         working-directory: apps/web
         env:
           NEXT_PUBLIC_API_URL: http://localhost/api/v1
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_NAME: KomunaID
   frontend-test:
     name: Frontend Tests
     runs-on: ubuntu-latest
