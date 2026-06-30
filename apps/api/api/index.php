@@ -7,16 +7,29 @@ define('LARAVEL_START', microtime(true));
 require __DIR__ . '/../vendor/autoload.php';
 
 $tmpStorage = '/tmp/storage';
-if (!is_dir($tmpStorage)) {
-    @mkdir($tmpStorage, 0755, true);
-    @mkdir($tmpStorage . '/framework/cache/data', 0755, true);
-    @mkdir($tmpStorage . '/framework/sessions', 0755, true);
-    @mkdir($tmpStorage . '/framework/views', 0755, true);
-    @mkdir($tmpStorage . '/logs', 0755, true);
+$dirs = [
+    $tmpStorage,
+    $tmpStorage . '/framework/cache/data',
+    $tmpStorage . '/framework/sessions',
+    $tmpStorage . '/framework/views',
+    $tmpStorage . '/logs',
+];
+
+foreach ($dirs as $dir) {
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+    }
 }
 
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-$app->bind('path.storage', fn () => $tmpStorage);
+$app->useStoragePath($tmpStorage);
+
+$config = $app->make('config');
+$config->set('view.compiled', $tmpStorage . '/framework/views');
+$config->set('session.path', $tmpStorage . '/framework/sessions');
+$config->set('cache.stores.file.path', $tmpStorage . '/framework/cache/data');
+$config->set('logging.channels.single.path', $tmpStorage . '/logs/laravel.log');
+$config->set('logging.channels.stderr.path', $tmpStorage . '/logs/laravel.log');
 
 $app->handleRequest(Request::capture());
