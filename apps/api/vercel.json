@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "buildCommand": "composer install --no-dev --optimize-autoloader",
+  "outputDirectory": ".",
+  "installCommand": "npm install --ignore-scripts",
   "functions": {
     "api/*.php": {
       "runtime": "vercel-php@0.9.0",
